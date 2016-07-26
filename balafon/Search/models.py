@@ -53,4 +53,14 @@ class SearchField(models.Model):
 
     class Meta:
         verbose_name = _(u'search field')
-        verbose_name_plural = _(u'search fields')
+        verbose_name_plural = _(u'search fields')
+
+
+class SearchResult(models.Model):
+    """fields"""
+    results_count = models.IntegerField(_(u'Number of results'))
+    result_ids = models.TextField(_(u'ID list of results'), blank=True)
+    
+    class Meta:
+        verbose_name = _(u'search result')
+        verbose_name_plural = _(u'search results')

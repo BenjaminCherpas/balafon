@@ -26,7 +26,7 @@ from balafon.Crm.models import Entity, Contact, Group, Action, Opportunity, City
 from balafon.Crm import settings as crm_settings
 from balafon.Emailing.models import Emailing
 from balafon.Emailing.forms import NewEmailingForm
-from balafon.Search.models import Search
+from balafon.Search.models import Search, SearchResult
 from balafon.Search.forms import (
     ActionForContactsForm, FieldChoiceForm, GroupForContactsForm, QuickSearchForm, PdfTemplateForm, SearchForm,
     SearchNameForm, get_field_form, ContactsAdminForm
@@ -148,7 +148,28 @@ def search(request, search_id=0, group_id=0, opportunity_id=0, city_id=0):
     entities_count = 0 if contacts_display else len(results)
 
     page_obj = paginate(request, results, getattr(settings, 'BALAFON_SEARCH_NB_IN_PAGE', None) or 50)
+    
+    results_count = len(results)
+    result_string = u""
+    for result in results:
+        if result.is_single_contact:
+            contact = Contact.objects.get(entity=result)
+            element_id = contact.id
+            element_type = "0"
+        else:
+            element_id = result.id
+            element_type = "1"
+        if result_string:
+            result_string += u"\t"
+        result_string += u"{0}{1}".format(element_id, element_type)
 
+    search_result = SearchResult(results_count=results_count, resul_ids=result_string)
+    search_result.save()
+    
+    processed_searches = SearchResult.objects.filter(results_count=0)
+    for the_search in processed_searches:
+        the_search.delete()
+    
     return render_to_response(
         'Search/search.html',
         {
@@ -166,6 +187,7 @@ def search(request, search_id=0, group_id=0, opportunity_id=0, city_id=0):
             'opportunity': opportunity,
             'city': city,
             'contacts_display': contacts_display,
+            'search_id': search_result.id,
         },
         context_instance=RequestContext(request)
     )
