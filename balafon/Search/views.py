@@ -647,3 +647,14 @@ def export_to_pdf(request):
         logger.exception("export_to_pdf")
         raise
     raise Http404
+
+
+@user_passes_test(can_access)
+@popup_redirect
+def display_map(request, search_id):
+    search = SearchResult.objects.get(id=search_id)
+    searchres = search.results.split("\t")
+    result_ids = []
+    for r in searchres:
+        result_ids.append(int(r))
+    return render(request, "Search/display_map.html", {'search': json.dumps(result_ids)})
