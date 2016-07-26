@@ -1,4 +1,4 @@
-# coding: utf8
+# -*- coding: utf-8 -*-
 
 import codecs
 import difflib
@@ -34,7 +34,8 @@ def special_cases(city, txt):
     ct.save()
 
 
-def manage_spe_cases():       #Change the name of the special cases cities            
+def manage_spe_cases():
+    """Change the name of the special cases cities"""
     spe_cases = SpecialCaseCity.objects.filter(change_validated="no")
     for x in spe_cases:
         try:
@@ -76,10 +77,8 @@ def manage_spe_cases():       #Change the name of the special cases cities
 
 
 def fill_db(cntry, country_name):
-    
-    #Add all the cities from GeoNames in the database
-        
-    
+    """Add all the cities from GeoNames in the database"""
+
     with open("dev/balafon/balafon/Crm/fixtures/" + cntry + ".txt","r") as file1:
         nbcities = 0
         for line in file1:
@@ -124,7 +123,7 @@ def fill_db(cntry, country_name):
     
     
 def update_existingdb(country_name):
-    #Modify city names (already in the database) to correspond to GeoNames ones
+    """Modify city names (already in the database) to correspond to GeoNames ones"""
     cities = list(City.objects.filter(country=country_name, geonames_valid=False))
     
     rightcities = list(City.objects.filter(country=country_name, geonames_valid=True))
@@ -169,7 +168,8 @@ def update_existingdb(country_name):
             pass    
         
         
-def update_doubles(country_name):       #Update contacts and entities and remove the cities appearing twice or more
+def update_doubles(country_name):
+    """Update contacts and entities and remove the cities appearing twice or more"""
         
     cities=list(City.objects.filter(country=country_name).order_by('name', 'parent', 'zip_code'))
     prec=City(name="", parent=None)
@@ -207,7 +207,8 @@ def update_doubles(country_name):       #Update contacts and entities and remove
             pass
         
         
-def update_zip_code():      #Give a zip code to cities that don't have one
+def update_zip_code():
+    """Give a zip code to cities that don't have one"""
     cities = City.objects.filter(zip_code="00000")
     for c in cities:
         try:
