@@ -39,6 +39,10 @@ SEARCH_FORMS = [
             search_forms.EntityZoneGroupSearchForm if (settings.ZONE_GROUP_SEARCH) else None,
             search_forms.HasAddresseForm,
             search_forms.AddressSearchForm,
+            search_forms.DistrictSearchForm,
+            search_forms.Geographic25SearchForm,
+            search_forms.Geographic50SearchForm,
+            search_forms.Geographic100SearchForm,
         ],
     ), (
         _(u'Entity'),
@@ -123,6 +127,7 @@ SEARCH_FORMS = [
         _(u'Admin'),
         [
             search_forms.ContactsImportSearchForm,
+            search_forms.GeonamesValidForm
         ],
     ), (
         _(u'Options'),
