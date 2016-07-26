@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """search views and actions"""
 
+import hashlib
 import json
+import os
+import urllib
 import xlwt
 
 from django.db.models import Q
@@ -11,7 +14,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import user_passes_test
 from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, render
 from django.template import RequestContext, Context, Template
 from django.utils.translation import ugettext as _
 
@@ -657,4 +660,53 @@ def display_map(request, search_id):
     result_ids = []
     for r in searchres:
         result_ids.append(int(r))
-    return render(request, "Search/display_map.html", {'search': json.dumps(result_ids)})
+    return render(request, "Search/display_map.html", {'search': json.dumps(result_ids)})
+
+
+@user_passes_test(can_access)
+def import_gravatar(request, search_id):
+    search = SearchResult.objects.get(id=search_id)
+    searchres = search.results.split("\t")
+    result_ids = []
+    for r in searchres:
+        eid = int(r)
+        if eid % 10 == 0:
+            eid = eid / 10
+            etype = "c"
+        else:
+            eid = (eid - 1) / 10
+            etype = "e"
+        if etype == "e":
+            entity = Entity.objects.get(id=eid)
+            contacts = Contact.objects.filter(entity=entity)
+            for c in contacts:
+                    if c.email:
+                        img_url = gravatar_url(c.email)
+                        c.photo_url = img_url
+                        c.save()
+        else:
+            c = Contact.objects.get(id = eid)
+            if c.email:
+                img_url = gravatar_url(c.email)
+                c.photo_url = img_url
+                c.save()
+    ct_w_photo = Contact.objects.exclude(photo_url=None)
+    file2 = open("dev/balafon/balafon/Crm/static/img/single-contact.png").read()
+    f2 = hashlib.md5(file2).hexdigest()
+    for c in ct_w_photo:
+        urllib.urlretrieve(c.photo_url, "dev/balafon/balafon/Crm/static/img/online.png")
+        file1 = open("dev/balafon/balafon/Crm/static/img/online.png").read()
+        f1 = hashlib.md5(file1).hexdigest()
+        if f1 == f2:
+            c.photo_url = None
+            c.save()
+        os.remove("dev/balafon/balafon/Crm/static/img/online.png")
+    return HttpResponse('Images have been imported with success', content_type='text/plain')
+          
+            
+def gravatar_url(email, size=64):
+    try:
+        default = "http://image.noelshack.com/fichiers/2016/23/1465294200-single-contact.png"
+        return "https://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(email.lower()).hexdigest(), urllib.urlencode({'d':default, 's':str(size)}))
+    except UnicodeEncodeError:
+        pass

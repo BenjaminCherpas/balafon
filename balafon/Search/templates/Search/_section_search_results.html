@@ -191,6 +191,9 @@
 <li><a href="{% url "search_display_map" search_id %}" class="action-button" class="colorbox-form">
   <span class="glyphicon glyphicon-map-marker"></span> {% trans "Display on map" %}
 </a></li>
+<li><a href="{% url "search_import_gravatar" search_id %}" class="action-button">
+  <span class="glyphicon glyphicon-picture"></span> {% trans "Import gravatar images" %}
+</a></li>
 {% if user.is_superuser %}<li><a href="{% url "search_contacts_admin" %}" class="action-button" class="colorbox-form">
   <span class="glyphicon glyphicon-flash"></span> {% trans "Contacts Admin" %}
 </a></li>{% endif %}
