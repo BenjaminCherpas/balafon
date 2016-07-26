@@ -628,6 +628,7 @@ class Contact(AddressModel):
     phone = models.CharField(_('phone'), max_length=200, blank=True, default=u'')
     mobile = models.CharField(_('mobile'), max_length=200, blank=True, default=u'')
     email = models.EmailField(_('email'), blank=True, default=u'')
+    valid_email = models.BooleanField(verbose_name=_('valid email address'), default=True)
     
     uuid = models.CharField(max_length=100, blank=True, default='', db_index=True)
     
@@ -1726,4 +1727,41 @@ class SpecialCaseCity(models.Model):
     class Meta:
         verbose_name = _(u'special case city')
         verbose_name_plural = _(u'special case cities')
-        ordering = ['city']        ordering = ['city']
+        ordering = ['city']
+
+
+class MailProvider(models.Model):
+    """A mail provider"""
+    name = models.CharField(_(u'name'), max_length=50)
+    imapServer = models.CharField(_(u'imap server'), max_length=100)
+    port = models.IntegerField(_(u'imap port'), default=993)
+    
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _(u'mail provider')
+        verbose_name_plural = _(u'mail providers')
+        ordering = ['name']
+
+
+class MailImport(models.Model):
+    """Imported email"""
+    provider = models.ForeignKey(MailProvider)
+    mail_address = models.EmailField(_(u'Email address'), max_length=200)
+    date = models.DateField(_(u'Date'), default=None)
+    imported_by = models.ForeignKey(User, verbose_name=_(u'imported by'), default=None)
+    content = models.CharField(_(u'Content'), max_length=10000, default="")
+    
+    def __unicode__(self):
+        return self.mail_address
+
+
+class ErrorMailAddress(models.Model):
+    """adress email with error"""
+    address = models.CharField(_(u'Email address'), max_length=200)
+    date = models.CharField(_(u'Sending date'), max_length=200)
+    error = models.CharField(_(u'Error'), max_length=200)
+    
+    def __unicode__(self):
+        return self.address

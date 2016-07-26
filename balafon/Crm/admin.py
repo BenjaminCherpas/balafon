@@ -269,11 +269,11 @@ class MailImportAdmin(admin.ModelAdmin):
     list_filter = ['mail_address']
     search_fields = ['mail_address']
 
-admin.site.register(models.Mail_Import, MailImportAdmin)
+admin.site.register(models.MailImport, MailImportAdmin)
 
 
 class ErrorMailAddressAdmin(admin.ModelAdmin):
     list_display = ['address', 'date', 'error']
     search_fields = ['address']
 
-admin.site.register(models.Error_MailAddress, ErrorMailAddressAdmin)
+admin.site.register(models.ErrorMailAddress, ErrorMailAddressAdmin)
