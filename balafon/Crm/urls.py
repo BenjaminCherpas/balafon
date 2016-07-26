@@ -26,6 +26,9 @@ urlpatterns = [
     url(r'^entity-name/(?P<entity_id>.+)/$', entities.get_entity_name, name='crm_get_entity_name'),
     url(r'^entities/list/$', entities.get_entities, name='crm_get_entities'),
     url(r'^entity-id/$', entities.get_entity_id, name='crm_get_entity_id'),
+    url(r'^map/(?P<entity_id>\d+)/$', entities.display_map, name='crm_display_map'),
+    url(r'^getaddr/$', entities.get_addr, name='crm_get_addr'),
+    url(r'^putcoords/$', entities.put_coords, name='crm_put_coords'),
 
     # contacts
     url(r'^add-contact/(?P<entity_id>\d+)/$', contacts.add_contact, name='crm_add_contact'),

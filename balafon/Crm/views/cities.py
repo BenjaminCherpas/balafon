@@ -56,23 +56,36 @@ def get_cities(request):
     #subscribe form : no login required
     term = request.GET.get('term')
     country_id = request.GET.get('country', None)
+    zipcode = request.GET.get('zipcode', None)
     if country_id == 'undefined':
         # javascript none
         country_id = 0
 
     if country_id is not None:
         country_id = int(country_id)
+        if country_id != 0:
+            country = models.Zone.objects.get(id=country_id)
+            country_name = country.name
 
     default_country = models.Zone.objects.get(name=get_default_country(), parent__isnull=True)
-
-    if country_id is None:
-        cities_queryset = models.City.objects.filter(name__icontains=term)[:10]
-    else:
-        if country_id == 0 or country_id == default_country.id:
-            cities_queryset = models.City.objects.filter(name__icontains=term).exclude(parent__code='')[:10]
+    
+    if zipcode is None:
+        zipcode='0'
+    
+    if zipcode == '0':
+        if country_id == 0 or country_id is None:
+            cities_queryset = models.City.objects.filter(name__icontains=term, geonames_valid=True)[:10]
         else:
-            cities_queryset = models.City.objects.filter(name__icontains=term, parent__id=country_id)[:10]
+            cities_queryset = models.City.objects.filter(name__icontains=term, country=country_name, geonames_valid=True)[:10]
 
-    cities = [{'id': city.id, 'name': city.name} for city in cities_queryset]
+    else:
+        if country_id == 0 or country_id is None:
+            cities_queryset = models.City.objects.filter(name__icontains=term, zip_code__icontains=zipcode, geonames_valid=True)[:10]
+        else:
+            cities_queryset = models.City.objects.filter(name__icontains=term, country=country_name, zip_code__icontains=zipcode, geonames_valid=True)[:10]
+                
+    
+
+    cities = [{'id': city.id, 'name': city.name, 'zip_code': city.zip_code, 'country': city.country} for city in cities_queryset]
 
     return HttpResponse(json.dumps(cities), 'application/json')

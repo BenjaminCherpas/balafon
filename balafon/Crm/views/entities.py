@@ -2,16 +2,24 @@
 """view and edit entities"""
 
 from datetime import date
+import hashlib
 import json
+import os
 import re
+import urllib
+import urllib2
 
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.messages import warning
+from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, render
 from django.template import RequestContext
+from django import template
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 from coop_cms.utils import paginate
@@ -263,3 +271,76 @@ def select_entity_and_redirect(request, view_name, template_name):
         {'form': form},
         context_instance=RequestContext(request)
     )
+
+
+@user_passes_test(can_access)
+@popup_redirect
+def display_map(request, entity_id):
+    entity_type = request.GET.get('type')
+    return render(request, 'Crm/display_map.html', {'entity': entity_id, 'type': entity_type})
+
+
+@user_passes_test(can_access)
+def get_addr(request):
+    street_type = ["route", "rue", "chemin", "allée".decode('utf8'), "boulevard", "avenue", "place", "impasse", "montée".decode('utf8'), "coursière".decode('utf8'), "lotissement"]
+    identity = request.GET.get('term')
+    type_ent = request.GET.get('type')
+    if type_ent == "e":
+        entity = models.Entity.objects.get(id=identity)
+    else:
+        entity = models.Contact.objects.get(id=identity)
+    address = ""
+    if entity.city != None:
+        latitude = entity.city.latitude
+        longitude = entity.city.longitude
+        lat = entity.latitude
+        lon = entity.longitude
+        for stype in street_type:
+            if stype in entity.address.lower():
+                address = entity.address
+            elif stype in entity.address2.lower():
+                address = entity.address2
+            elif stype in entity.address3.lower():
+                address = entity.address3
+        if address == "":
+            address = entity.address
+        city = entity.city.name
+
+    else:
+        latitude = entity.entity.city.latitude
+        longitude = entity.entity.city.longitude
+        lat = entity.entity.latitude
+        lon = entity.entity.longitude
+        for stype in street_type:
+            if stype in entity.entity.address.lower():
+                address = entity.entity.address
+            elif stype in entity.entity.address2.lower():
+                address = entity.entity.address2
+            elif stype in entity.entity.address3.lower():
+                address = entity.entity.address3
+        if address == "":
+            address = entity.entity.address
+        city = entity.entity.city.name
+        
+    if type_ent == "e":
+        name = entity.name
+    else:
+        name = entity.lastname + " " + entity.firstname
+    
+    return HttpResponse(json.dumps({'address': address, 'city': city, 'latitude': latitude, 'longitude': longitude, 'lat': lat, 'lon': lon, 'name': name}), 'application/json')
+
+
+@user_passes_test(can_access)
+def put_coords(request):
+    entity_id = request.GET.get('ent')
+    lat = request.GET.get('lat')
+    lon = request.GET.get('lon')
+    type_ent = request.GET.get('type')
+    if type_ent == "e":
+        entity = models.Entity.objects.get(id=entity_id)
+    else:
+        entity = models.Contact.objects.get(id=entity_id)
+    entity.latitude = lat
+    entity.longitude = lon
+    entity.save()
+    return HttpResponse(json.dumps({'latitude': lat, 'longitude': lon}), 'application/json')

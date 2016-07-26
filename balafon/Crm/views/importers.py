@@ -331,16 +331,12 @@ def _set_contact_fields(contact, contact_data, fields, complex_fields, default_d
         contact.city = resolve_city(
             contact_data['city'],
             contact_data['zip_code'],
-            contact_data['country'],
-            default_department
         )
 
     if contact_data['entity.city']:
         contact.entity.city = resolve_city(
             contact_data['entity.city'],
             contact_data['entity.zip_code'],
-            contact_data['entity.country'],
-            default_department
         )
 
     if contact_data['role']:

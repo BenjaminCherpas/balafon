@@ -183,7 +183,7 @@ class ImportFileTest(BaseTestCase):
         response = self.client.post(url, data=data)
         self.assertEqual(302, response.status_code)
         self.assertEqual(3, models.Contact.objects.count())
-        
+
         contact_fr = models.Contact.objects.get(lastname="Oui")
         self.assertEqual(contact_fr.favorite_language, "fr")
 

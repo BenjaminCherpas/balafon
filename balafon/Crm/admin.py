@@ -30,7 +30,7 @@ class HasParentFilter(admin.SimpleListFilter):
 
 class ZoneAdmin(admin.ModelAdmin):
     """custom admin view"""
-    list_display = ['name', 'parent', 'type']
+    list_display = ['id', 'code', 'name', 'parent', 'type']
     ordering = ['type', 'name']
     list_filter = ['type', HasParentFilter, 'parent']
     search_fields = ['name']
@@ -99,6 +99,7 @@ class ContactAdmin(admin.ModelAdmin):
     """custom admin view"""
     list_display = ['lastname', 'firstname', 'entity', 'email']
     search_fields = ['lastname', 'email']
+    list_filter = ['entity', 'city', 'valid_email']
     raw_id_admin = ('entity',)
     inlines = (SubscriptionInline,)
 
@@ -123,10 +124,10 @@ class GroupInline(admin.TabularInline):
 
 class CityAdmin(admin.ModelAdmin):
     """custom admin view"""
-    list_display = ['__unicode__', 'parent']
+    list_display = ['name', 'zip_code', 'parent', 'latitude', 'longitude', 'country']
     search_fields = ['name']
     ordering = ['name']
-    list_filter = [HasParentFilter, 'parent', ]
+    list_filter = [HasParentFilter, 'parent__type', 'parent', 'country']
     raw_id_fields = ('groups',)
 
 admin.site.register(models.City, CityAdmin)
@@ -134,8 +135,9 @@ admin.site.register(models.City, CityAdmin)
 
 class EntityAdmin(admin.ModelAdmin):
     """custom admin view"""
-    list_display = ('name', 'type')
+    list_display = ('name', 'type', 'city')
     search_fields = ['name']
+    list_filter = ['city', 'type']
 
 admin.site.register(models.Entity, EntityAdmin)
 
@@ -244,3 +246,34 @@ class TeamMemberAdmin(admin.ModelAdmin):
 admin.site.register(models.TeamMember, TeamMemberAdmin)
 
 admin.site.register(models.StreetType)
+
+
+class SpecialCaseCityAdmin(admin.ModelAdmin):
+    list_display = ['city', 'oldname', 'possibilities']
+    list_filter = ['change_validated']
+    search_fields = ['city__name']
+
+admin.site.register(models.SpecialCaseCity, SpecialCaseCityAdmin)
+
+
+class MailProviderAdmin(admin.ModelAdmin):
+    list_display = ['name', 'imapServer', 'port', ]
+    list_filter = ['name']
+    search_fields = ['name']
+
+admin.site.register(models.MailProvider, MailProviderAdmin)
+
+
+class MailImportAdmin(admin.ModelAdmin):
+    list_display = ['mail_address', 'date']
+    list_filter = ['mail_address']
+    search_fields = ['mail_address']
+
+admin.site.register(models.Mail_Import, MailImportAdmin)
+
+
+class ErrorMailAddressAdmin(admin.ModelAdmin):
+    list_display = ['address', 'date', 'error']
+    search_fields = ['address']
+
+admin.site.register(models.Error_MailAddress, ErrorMailAddressAdmin)

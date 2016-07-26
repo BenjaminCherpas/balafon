@@ -160,6 +160,14 @@ class Zone(BaseZone):
 
 class City(BaseZone):
     """city"""
+    
+    district_id = models.CharField(max_length=10, null=True, verbose_name=_(u'district id'))
+    latitude = models.FloatField(null=True, verbose_name=_(u'latitude'))
+    longitude = models.FloatField(null=True, verbose_name=_(u'longitude'))
+    zip_code = models.CharField(max_length=20, blank=True, verbose_name=_(u'zip code'))
+    geonames_valid = models.BooleanField(default=False, verbose_name=_(u'is geonames valid'))
+    country = models.CharField(max_length=50, blank=True, verbose_name=_(u'country'))
+    
     groups = models.ManyToManyField(
         Zone, blank=True, verbose_name=_(u'group'), related_name='city_groups_set'
     )
@@ -215,6 +223,9 @@ class AddressModel(LastModifiedModel):
     address = models.CharField(_('address'), max_length=200, blank=True, default=u'')
     address2 = models.CharField(_('address 2'), max_length=200, blank=True, default=u'')
     address3 = models.CharField(_('address 3'), max_length=200, blank=True, default=u'')
+    
+    latitude = models.FloatField(null=True, verbose_name=_(u'latitude'))
+    longitude = models.FloatField(null=True, verbose_name=_(u'longitude'))
 
     zip_code = models.CharField(_('zip code'), max_length=20, blank=True, default=u'')
     cedex = models.CharField(_('cedex'), max_length=200, blank=True, default=u'')
@@ -340,8 +351,16 @@ class Entity(AddressModel):
         if self.is_single_contact:
             contact = self.default_contact
             self.name = u"{0} {1}".format(contact.lastname, contact.firstname).lower()
-            #don't put *args, *kwargs -> it may cause integrity error
+            # don't put *args, *kwargs -> it may cause integrity error
             super(Entity, self).save()
+        if self.old_address != self.address:
+            self.latitude = None
+            self.longitude = None
+            super(Entity, self).save()
+            
+    def __init__(self, *args, **kwargs):
+        super(Entity, self).__init__(*args, **kwargs)
+        self.old_address = self.address
     
     def __unicode__(self):
         return self.name
@@ -628,6 +647,10 @@ class Contact(AddressModel):
     favorite_language = models.CharField(
         _("favorite language"), max_length=10, default="", blank=True, choices=settings.get_language_choices()
     )
+    
+    def __init__(self, *args, **kwargs):
+        super(Contact, self).__init__(*args, **kwargs)
+        self.old_address = self.address
 
     def get_view_url(self):
         if self.entity.is_single_contact:
@@ -984,6 +1007,11 @@ class Contact(AddressModel):
         if self.entity.is_single_contact:
             #force the entity name for ordering
             self.entity.save()
+            
+        if self.old_address != self.address:
+            self.latitude = None
+            self.longitude= None
+            super(Contact, self).save()
             
     class Meta:
         verbose_name = _(u'contact')
@@ -1686,3 +1714,16 @@ class ContactsImport(TimeStampedModel):
     class Meta:
         verbose_name = _(u'contact import')
         verbose_name_plural = _(u'contact imports')
+
+
+class SpecialCaseCity(models.Model):
+    """This models is used by city import tool"""
+    city = models.ForeignKey(City)
+    oldname = models.CharField(_(u'old name'), max_length=100, default="None")
+    possibilities = models.CharField(_(u'possibilities'), max_length=500)
+    change_validated = models.CharField(_(u'change validated'), max_length=3, default=0)
+    
+    class Meta:
+        verbose_name = _(u'special case city')
+        verbose_name_plural = _(u'special case cities')
+        ordering = ['city']        ordering = ['city']
