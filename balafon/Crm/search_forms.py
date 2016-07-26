@@ -1596,4 +1596,15 @@ class GeonamesValidForm(YesNoSearchFieldForm):
             return Q(entity__city__geonames_valid=False)
         else:
             return Q(entity__city__geonames_valid=True)
-        
+        
+class ExistPictureForm(YesNoSearchFieldForm):
+    """by existing picture"""
+    name = 'exist_picture'
+    label = _(u'Has a picture ?')
+        
+    def get_lookup(self):
+        """lookup"""
+        if not self.is_yes():
+            return (Q(photo="") & Q(photo_url=None))
+        else:
+            return (~Q(photo="") | ~Q(photo_url=None))
