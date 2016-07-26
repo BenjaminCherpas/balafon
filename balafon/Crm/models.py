@@ -136,7 +136,7 @@ class BaseZone(NamedElement):
 
 
 class Zone(BaseZone):
-    """A zone is a group of cities : departements, region, ciuntry..."""
+    """A zone is a group of cities : departements, region, country..."""
     type = models.ForeignKey(ZoneType)
     code = models.CharField(_('code'), max_length=10, blank=True, default="")
     
@@ -231,7 +231,7 @@ class AddressModel(LastModifiedModel):
     cedex = models.CharField(_('cedex'), max_length=200, blank=True, default=u'')
     city = models.ForeignKey(City, verbose_name=_('city'), blank=True, default=None, null=True)
 
-    #These fields are just kept for editing the address field
+    # These fields are just kept for editing the address field
     street_number = models.CharField(_(u'street number'), max_length=20, blank=True, default='')
     street_type = models.ForeignKey(StreetType, default=None, blank=True, null=True, verbose_name=_(u'street type'))
 
@@ -245,7 +245,7 @@ class AddressModel(LastModifiedModel):
         City, verbose_name=_('city'), blank=True, default=None, null=True, related_name='%(class)s_billing_set'
     )
 
-    #These fields are just kept for editing the address field
+    # These fields are just kept for editing the address field
     billing_street_number = models.CharField(_(u'street number'), max_length=20, blank=True, default='')
     billing_street_type = models.ForeignKey(
         StreetType, default=None, blank=True, null=True, verbose_name=_(u'street type'),
@@ -333,8 +333,7 @@ class Entity(AddressModel):
     
     def save(self, *args, **kwargs):
         """save"""
-
-        #add http if missing in website url
+        # add http if missing in website url
         if self.website:
             parsing = urlparse(self.website)
             if not parsing.scheme:
@@ -344,7 +343,7 @@ class Entity(AddressModel):
         if self.contact_set.filter(has_left=False).count() == 0:
             Contact.objects.create(entity=self, main_contact=True, has_left=False)
         elif self.contact_set.filter(main_contact=True, has_left=False).count() == 0:
-            #Always at least 1 main contact per entity
+            # Always at least 1 main contact per entity
             contact = self.default_contact
             contact.main_contact = True
             contact.save()

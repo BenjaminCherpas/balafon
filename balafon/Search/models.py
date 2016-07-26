@@ -53,4 +53,4 @@ class SearchField(models.Model):
 
     class Meta:
         verbose_name = _(u'search field')
-        verbose_name_plural = _(u'search fied')
+        verbose_name_plural = _(u'search fields')
