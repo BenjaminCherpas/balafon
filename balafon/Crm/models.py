@@ -1752,6 +1752,10 @@ class MailImport(models.Model):
     date = models.DateField(_(u'Date'), default=None)
     imported_by = models.ForeignKey(User, verbose_name=_(u'imported by'), default=None)
     content = models.CharField(_(u'Content'), max_length=10000, default="")
+
+    class Meta:
+        verbose_name = _(u'mail import')
+        verbose_name_plural = _(u'mail imports')
     
     def __unicode__(self):
         return self.mail_address
@@ -1765,3 +1769,7 @@ class ErrorMailAddress(models.Model):
     
     def __unicode__(self):
         return self.address
+
+    class Meta:
+        verbose_name = _(u'mail error')
+        verbose_name_plural = _(u'mail errors')

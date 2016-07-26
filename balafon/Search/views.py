@@ -155,7 +155,7 @@ def search(request, search_id=0, group_id=0, opportunity_id=0, city_id=0):
     results_count = len(results)
     result_string = u""
     for result in results:
-        if result.is_single_contact:
+        if getattr(result, 'is_single_contact', False):
             contact = Contact.objects.get(entity=result)
             element_id = contact.id
             element_type = "0"
@@ -166,7 +166,7 @@ def search(request, search_id=0, group_id=0, opportunity_id=0, city_id=0):
             result_string += u"\t"
         result_string += u"{0}{1}".format(element_id, element_type)
 
-    search_result = SearchResult(results_count=results_count, resul_ids=result_string)
+    search_result = SearchResult(results_count=results_count, result_ids=result_string)
     search_result.save()
     
     processed_searches = SearchResult.objects.filter(results_count=0)
