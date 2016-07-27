@@ -49,7 +49,7 @@ def manage_spe_cases():
             else:
                 for i in range (1,len(temp)):
                     count += 1
-                    print("\t[" + `i` + "] : " + temp[i])
+                    print("\t[" + str(i) + "] : " + temp[i])
             choice = -1
             while choice > count or choice < 0:
                 choice = int(raw_input("\nWrite the value of the corresponding name : "))
@@ -79,7 +79,7 @@ def fill_db():
 
     # Add all the cities from GeoNames in the database
     app_dir_name = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    geonames_file_name = os.path.join(app_dir_name, 'fixtures/GeoNames_f.txt')
+    geonames_file_name = os.path.join(app_dir_name, 'geonames/FR.csv')
 
     with open(geonames_file_name, "r") as file2:
         nblines = 0
@@ -101,11 +101,20 @@ def fill_db():
                 tab.append(cname)
             zone = Zone.objects.get(name=dept)
 
-            city = City(name=cname, parent=zone, district_id = words[8], latitude = float(words[9]), longitude = float(words[10]), geonames_valid = True, country = 'France', zip_code=words[1])
+            city = City(
+                name=cname,
+                parent=zone,
+                district_id=words[8],
+                latitude=float(words[9]),
+                longitude=float(words[10]),
+                geonames_valid=True,
+                country='France',
+                zip_code=words[1]
+            )
             city.save()
-            count+=1
-            if count%500 == 0:
-                print(`count` + "/" + `nblines`)
+            count += 1
+            if count % 500 == 0:
+                print(str(count) + "/" + str(nblines))
 
     # Modify city names (already in the database) to correspond to GeoNames ones
     cities = list(City.objects.filter(parent__parent__parent__name='France', geonames_valid=False))
@@ -157,10 +166,9 @@ def fill_db():
         
 def update_doubles():
     """Update contacts and entities and remove the cities appearing twice or more"""
-        
 
-    cities=City.objects.filter(parent__parent__parent__name='France').order_by("name", "parent")
-    prec=City(name="", parent=None)
+    cities = City.objects.filter(parent__parent__parent__name='France').order_by("name", "parent")
+    prec = City(name="", parent=None)
     for c in cities:
         try:
             if c.district_id == "999":
@@ -241,7 +249,7 @@ class Command(BaseCommand):
 
             print("Choose the action :")
             print("\t[0] Quit")
-            print("\t[1] Fill the database from \'fixtures/GeoNames_f.txt\'")
+            print("\t[1] Fill the database from \'geonames/FR.csv\'")
             print("\t[2] Manage special cases")
             print("\t[3] Update contacts and entities and delete cities appearing twice or more")
             print("\t[4] Update the zip code of all cities")

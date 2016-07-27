@@ -285,7 +285,10 @@ class Command(BaseCommand):
             elif choice == 0:
                 return
 
-        urllib.urlretrieve('http://download.geonames.org/export/zip/' + cntry + '.zip', 'dev/balafon/balafon/Crm/fixtures/' + cntry + '.zip')
+        urllib.urlretrieve(
+            'http://download.geonames.org/export/zip/' + cntry + '.zip',
+            'dev/balafon/balafon/Crm/fixtures/' + cntry + '.zip'
+        )
         zfile = zipfile.ZipFile('dev/balafon/balafon/Crm/fixtures/' + cntry + '.zip','r')
         for i in zfile.namelist():
             if i== cntry + '.txt':

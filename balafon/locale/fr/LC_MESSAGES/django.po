@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-26 23:59+0200\n"
+"POT-Creation-Date: 2016-07-27 12:56+0200\n"
 "PO-Revision-Date: 2015-07-30 17:49+0100\n"
 "Last-Translator: Luc Jean <ljean@apidev.fr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2301,6 +2301,10 @@ msgid ""
 msgstr ""
 "Cocher et saisissez  les emails et nom des contacts à importer.\n"
 "        "
+
+#: Crm/templates/Crm/display_map.html:86
+msgid "Address not found"
+msgstr "Adresse inconnue"
 
 #: Crm/templates/Crm/do_action.html:8
 msgid "Do you want to mark this action undone?"
