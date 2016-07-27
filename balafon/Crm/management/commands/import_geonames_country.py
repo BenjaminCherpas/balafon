@@ -79,32 +79,36 @@ def manage_spe_cases():
 def fill_db(cntry, country_name):
     """Add all the cities from GeoNames in the database"""
 
-    with open("dev/balafon/balafon/Crm/fixtures/" + cntry + ".csv","r") as file1:
+    with open(cntry + ".csv","r") as file1:
         nbcities = 0
         for line in file1:
             nbcities += 1
-    with codecs.open("dev/balafon/balafon/Crm/fixtures/" + cntry + ".csv","r","utf8") as file1:
+    with codecs.open(cntry + ".csv", "r", "utf8") as file1:
         count = 0
+        country_zone_type = ZoneType.objects.get(type="country")
+        region_zone_type = ZoneType.objects.get(type="region")
+        department_zone_type = ZoneType.objects.get(type="department")
+
         for l in file1:
             try:
                 words = l.split("\t")
                 cname = words[2]
                 dept = words[5]
                 reg = words[3]
-                if len(Zone.objects.filter(name=country_name, type=ZoneType.objects.get(name="Pays"))) > 0:
-                    zonec = Zone.objects.filter(name=country_name, type=ZoneType.objects.get(name="Pays"))[0]
+                if len(Zone.objects.filter(name=country_name, type=country_zone_type)) > 0:
+                    zonec = Zone.objects.filter(name=country_name, type=country_zone_type)[0]
                 else:
                     zonec = Zone(
-                        name=country_name, type=ZoneType.objects.get(name="Pays")
+                        name=country_name, type=country_zone_type
                     )
                     zonec.save()
                 if reg != "":
-                    if len(Zone.objects.filter(name=reg, type=ZoneType.objects.get(name="Région".decode('utf8')))) > 0:
-                        zoner = Zone.objects.filter(name=reg, type=ZoneType.objects.get(name="Région".decode('utf8')))[0]
+                    if len(Zone.objects.filter(name=reg, type=region_zone_type)) > 0:
+                        zoner = Zone.objects.filter(name=reg, type=region_zone_type)[0]
                     else:
                         zoner = Zone(
                             name=reg,
-                            type=ZoneType.objects.get(name="Région".decode('utf8')),
+                            type=region_zone_type,
                             parent=zonec,
                             code=words[4]
                         )
@@ -112,10 +116,10 @@ def fill_db(cntry, country_name):
                 else:
                     zoner = zonec
                 if dept != '':
-                    if len(Zone.objects.filter(name=dept, type=ZoneType.objects.get(name="Département".decode('utf8')))) > 0:
-                        zoned = Zone.objects.filter(name=dept, type=ZoneType.objects.get(name="Département".decode('utf8')))[0]
+                    if len(Zone.objects.filter(name=dept, type=department_zone_type)) > 0:
+                        zoned = Zone.objects.filter(name=dept, type=department_zone_type)[0]
                     else:
-                        zoned = Zone(name=dept, type=ZoneType.objects.get(name="Département".decode('utf8')), parent=zoner, code=words[6])
+                        zoned = Zone(name=dept, type=department_zone_type, parent=zoner, code=words[6])
                         zoned.save()
                 else:
                     zoned = zoner
@@ -302,7 +306,7 @@ class Command(BaseCommand):
         )
         zfile = zipfile.ZipFile(cntry + '.zip','r')
         for file_name in zfile.namelist():
-            if file_name == cntry + '.csv':
+            if file_name == cntry + '.txt':
                 data = zfile.read(file_name)  # lecture du fichier compresse
                 fp = open(cntry + '.csv', "wb")  # creation en local du nouveau fichier
                 fp.write(data)  # ajout des donnees du fichier compresse dans le fichier local
@@ -314,7 +318,7 @@ class Command(BaseCommand):
         while choose != 0:        
             print("\nChoose the action :")
             print("\t[0] Quit")
-            print("\t[1] Fill the database from \'fixtures/" + cntry + ".csv\'")
+            print("\t[1] Fill the database from \'" + cntry + ".csv\'")
             print("\t[2] Manage special cases")
             print("\t[3] Update contacts and entities and delete cities appearing twice or more")
             print("\t[4] Update existing cities")
