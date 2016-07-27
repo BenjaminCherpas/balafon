@@ -40,7 +40,7 @@ class ContactForm(FormWithFieldsetMixin, ModelFormWithAddress):
         model = models.Contact
         fields = (
             'gender', 'lastname', 'firstname', 'birth_date', 'title', 'role', 'job',
-            'email', 'phone', 'mobile', 'favorite_language',
+            'email', 'phone', 'mobile', 'fav_lang',
             'street_number', 'street_type', 'address', 'address2', 'address3', 'zip_code', 'city', 'cedex', 'country',
             'main_contact', 'email_verified', 'has_left', 'accept_notifications', 'photo', 'photo_url',
             'billing_street_number', 'billing_street_type', 'billing_address', 'billing_address2', 'billing_address3',
@@ -61,7 +61,7 @@ class ContactForm(FormWithFieldsetMixin, ModelFormWithAddress):
             }),
             ('web', {
                 'fields': [
-                    'birth_date', 'title', 'role', 'job', 'favorite_language',
+                    'birth_date', 'title', 'role', 'job', 'fav_lang',
                 ],
                 'legend': _(u'Contact details')
                 }
@@ -141,11 +141,11 @@ class ContactForm(FormWithFieldsetMixin, ModelFormWithAddress):
                 field.initial = get_subscription_default_value()
 
         if has_language_choices():
-            self.fields['favorite_language'].widget = forms.Select(
+            self.fields['fav_lang'].widget = forms.Select(
                 choices=get_language_choices(), attrs={'class': 'form-control'}
             )
         else:
-            self.fields['favorite_language'].widget = forms.HiddenInput()
+            self.fields['fav_lang'].widget = forms.HiddenInput()
 
         if not self.instance or not any([self.instance.lastname, self.instance.firstname, self.instance.email]):
             # If the contact has not been created of not filled

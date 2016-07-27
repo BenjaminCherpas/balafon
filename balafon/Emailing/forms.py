@@ -23,7 +23,9 @@ import floppyforms as forms
 
 from balafon.Crm import settings as crm_settings
 from balafon.Crm.forms import ModelFormWithCity, BetterBsModelForm
-from balafon.Crm.models import Group, Contact, Entity, EntityType, Action, ActionType, SubscriptionType, Subscription
+from balafon.Crm.models import (
+    Language, Group, Contact, Entity, EntityType, Action, ActionType, SubscriptionType, Subscription
+)
 from balafon.Crm.widgets import CityAutoComplete
 from balafon.Emailing import models
 from balafon.Emailing.utils import create_subscription_action, send_notification_email, get_language
@@ -201,15 +203,18 @@ class EmailSubscribeForm(BetterBsModelForm):
     
     class Meta:
         model = Contact
-        fields = ('email', 'favorite_language')
+        fields = ('email', 'fav_lang')
 
     def __init__(self, *args, **kwargs):
         self.subscription_type = kwargs.pop('subscription_type', None)
         super(EmailSubscribeForm, self).__init__(*args, **kwargs)
 
-        self.fields['favorite_language'].widget = forms.HiddenInput()
+        self.fields['fav_lang'].widget = forms.HiddenInput()
         if crm_settings.has_language_choices():
-            self.fields['favorite_language'].initial = get_language()
+            try:
+                self.fields['fav_lang'].initial = Language.objects.get(code=get_language())
+            except Language.DoesNotExist:
+                pass
     
     def save(self, request=None):
         """save"""
@@ -503,7 +508,10 @@ class SubscribeForm(ModelFormWithCity, SubscriptionTypeFormMixin):
         contact = super(SubscribeForm, self).save(commit=False)
         contact.entity = self.get_entity()
         contact.city = self.cleaned_data['city']
-        contact.favorite_language = self.cleaned_data.get('favorite_language', '')
+        try:
+            contact.fav_lang = Language.objects.get(code=self.cleaned_data.get('favorite_language', ''))
+        except Language.DoesNotExist:
+            pass
         contact.save()
         # delete unknown contacts for the current entity
         contact.entity.contact_set.filter(lastname='', firstname='').exclude(id=contact.id).delete()
@@ -618,7 +626,10 @@ class MinimalSubscribeForm(BetterBsModelForm, SubscriptionTypeFormMixin):
         """save"""
         contact = super(MinimalSubscribeForm, self).save(commit=False)
         contact.entity = self.get_entity()
-        contact.favorite_language = self.cleaned_data.get('favorite_language', '')
+        try:
+            contact.fav_lang = Language.objects.get(code=self.cleaned_data.get('favorite_language', ''))
+        except Language.DoesNotExist:
+            pass
         contact.save()
         # delete unknown contacts for the current entity
         contact.entity.contact_set.filter(lastname='', firstname='').exclude(id=contact.id).delete()

@@ -65,7 +65,7 @@ class ContactSerializer(serializers.ModelSerializer):
             'get_city', 'get_address', 'get_address2', 'get_address3', 'get_cedex', 'get_zip_code', 'get_country',
             'get_billing_city', 'get_billing_address', 'get_billing_address2', 'get_billing_address3',
             'get_billing_cedex', 'get_billing_zip_code', 'get_billing_country',
-            'mobile', 'get_phone', 'email', 'notes', 'get_view_url', 'favorite_language',
+            'mobile', 'get_phone', 'email', 'notes', 'get_view_url', 'fav_lang',
         )
 
 

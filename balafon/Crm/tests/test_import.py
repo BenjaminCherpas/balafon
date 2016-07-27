@@ -34,7 +34,7 @@ class ImportFileTest(BaseTestCase):
             'entity.address', 'entity.address2', 'entity.address3',
             'entity.city', 'entity.cedex', 'entity.zip_code', 'entity.country',
             'address', 'address2', 'address3', 'city', 'cedex', 'zip_code', 'country',
-            'entity.groups', 'groups', 'favorite_language', "title", "birth_date",
+            'entity.groups', 'groups', 'fav_lang', "title", "birth_date",
         ]
 
     def test_create_contacts_import(self, filename='contacts1.csv'):
@@ -627,7 +627,7 @@ class ImportTemplateTest(BaseTestCase):
             'entity.description', 'entity.website', 'entity.email', 'entity.phone',
             'entity.fax', 'entity.notes', 'entity.address', 'entity.address2', 'entity.address3',
             'entity.city', 'entity.cedex', 'entity.zip_code', 'entity.country', 'address', 'address2',
-            'address3', 'city', 'cedex', 'zip_code', 'country', 'entity.groups', 'groups', 'favorite_language',
+            'address3', 'city', 'cedex', 'zip_code', 'country', 'entity.groups', 'groups', 'fav_lang',
             'title', 'birth_date'
         ]
 
@@ -670,7 +670,7 @@ class ImportTemplateTest(BaseTestCase):
             'entity.description', 'entity.website', 'entity.email', 'entity.phone',
             'entity.fax', 'entity.notes', 'entity.address', 'entity.address2', 'entity.address3',
             'entity.city', 'entity.cedex', 'entity.zip_code', 'entity.country', 'address', 'address2',
-            'address3', 'city', 'cedex', 'zip_code', 'country', 'entity.groups', 'groups', 'favorite_language',
+            'address3', 'city', 'cedex', 'zip_code', 'country', 'entity.groups', 'groups', 'fav_lang',
             'title', 'birth_date'
         ]
 
@@ -707,7 +707,7 @@ class ImportTemplateTest(BaseTestCase):
             'entity.description', 'entity.website', 'entity.email', 'entity.phone',
             'entity.fax', 'entity.notes', 'entity.address', 'entity.address2', 'entity.address3',
             'entity.city', 'entity.cedex', 'entity.zip_code', 'entity.country', 'address', 'address2',
-            'address3', 'city', 'cedex', 'zip_code', 'country', 'entity.groups', 'groups', 'favorite_language',
+            'address3', 'city', 'cedex', 'zip_code', 'country', 'entity.groups', 'groups', 'fav_lang',
             'title', 'birth_date'
         ]
 

@@ -26,6 +26,16 @@ class SubscribeTest(TestCase):
         self._lang = settings.LANGUAGES[0][0]
         activate(self._lang)
 
+        try:
+            self.french = models.Language.objects.get(code='fr')
+        except models.Language.DoesNotExist:
+            self.french = mommy.make(models.Language, code='fr')
+
+        try:
+            self.english = models.Language.objects.get(code='en')
+        except models.Language.DoesNotExist:
+            self.english = mommy.make(models.Language, code='en')
+
         if not getattr(settings, 'BALAFON_ALLOW_SINGLE_CONTACT', True):
             settings.BALAFON_INDIVIDUAL_ENTITY_ID = models.EntityType.objects.create(name="particulier").id
 
@@ -51,8 +61,8 @@ class SubscribeTest(TestCase):
         self.assertEqual(response.status_code, 200)
         soup = BeautifulSoup(response.content)
 
-        self.assertEqual(1, len(soup.select("#id_favorite_language")))
-        self.assertEqual('fr', soup.select("#id_favorite_language")[0]["value"])
+        self.assertEqual(1, len(soup.select("#id_fav_lang")))
+        self.assertEqual(str(self.french.id), soup.select("#id_fav_lang")[0]["value"])
 
     @override_settings(LANGUAGES=(('en', 'English'),))
     def test_view_subscription_no_language(self):
@@ -65,8 +75,8 @@ class SubscribeTest(TestCase):
         self.assertEqual(response.status_code, 200)
         soup = BeautifulSoup(response.content)
 
-        self.assertEqual(1, len(soup.select("#id_favorite_language")))
-        self.assertEqual('', soup.select("#id_favorite_language")[0].get("value", ""))
+        self.assertEqual(1, len(soup.select("#id_fav_lang")))
+        self.assertEqual('', soup.select("#id_fav_lang")[0].get("value", ""))
 
     def test_view_subscribe_newsletter(self):
         """view email subscription page"""

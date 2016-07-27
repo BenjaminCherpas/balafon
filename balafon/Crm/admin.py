@@ -46,7 +46,7 @@ class SameAsAdmin(admin.ModelAdmin):
 
 admin.site.register(models.SameAs, SameAsAdmin)
 
-
+admin.site.register(models.Language)
 admin.site.register(models.OpportunityType)
 admin.site.register(models.ActionMenu)
 

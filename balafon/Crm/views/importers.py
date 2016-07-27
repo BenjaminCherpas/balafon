@@ -132,7 +132,7 @@ def _fill_contact_data(fields, row):
                 else:
                     contact_data[field] = models.Contact.GENDER_FEMALE
 
-        #Copy value of entity fields with _ rather than . for using it in template
+        # Copy value of entity fields with _ rather than . for using it in template
         if field.find('.') > 0:
             contact_data[field.replace('.', '_')] = contact_data[field]
 
@@ -297,18 +297,18 @@ def get_imports_fields():
         'entity.address', 'entity.address2', 'entity.address3',
         'entity.city', 'entity.cedex', 'entity.zip_code', 'entity.country',
         'address', 'address2', 'address3', 'city', 'cedex', 'zip_code', 'country',
-        'entity.groups', 'groups', 'favorite_language', 'title', 'birth_date'
+        'entity.groups', 'groups', 'fav_lang', 'title', 'birth_date'
     ]
 
     #custom fields
     custom_fields_count = models.CustomField.objects.all().aggregate(Max('import_order'))['import_order__max']
     if not custom_fields_count:
         custom_fields_count = 0
-    for i in xrange(custom_fields_count):
+    for i in range(custom_fields_count):
         fields.append('cf_{0}'.format(i+1))
 
     custom_fields = []
-    for index_ in xrange(1, custom_fields_count+1):
+    for index_ in range(1, custom_fields_count + 1):
         try:
             custom_field = models.CustomField.objects.get(import_order=index_)
             custom_fields.append(custom_field)
@@ -335,7 +335,7 @@ def contacts_import_template(request):
 
 def _create_contact(contact_data, contacts_import, entity_dict):
     """create a contact from import file"""
-    #Entity
+    # Entity
     if settings.DEBUG:
         try:
             print contact_data['entity'], contact_data['lastname']
@@ -394,7 +394,7 @@ def _set_contact_fields(contact, contact_data, fields, complex_fields, default_d
             obj = getattr(obj, pre_field)
         except ValueError:
             field = field_name
-        if contact_data[field_name] and field != 'city':
+        if contact_data[field_name] and field != 'city' and field != 'fav_lang':
             setattr(obj, field, contact_data[field_name])
 
     if contact_data['city']:
@@ -402,6 +402,12 @@ def _set_contact_fields(contact, contact_data, fields, complex_fields, default_d
             contact_data['city'],
             contact_data['zip_code'],
         )
+
+    if contact_data.get('fav_lang'):
+        try:
+            contact.fav_lang = models.Language.objects.get(code=contact_data['fav_lang'])
+        except models.Language.DoesNotExist:
+            pass
 
     if contact_data['entity.city']:
         contact.entity.city = resolve_city(
@@ -520,10 +526,12 @@ def confirm_contacts_import(request, import_id):
                     #create entities
                     entity_dict = {}
                     for contact_data in contacts:
+
                         contact, is_first_for_entity = _create_contact(contact_data, contacts_import, entity_dict)
                         _set_contact_fields(contact, contact_data, fields, complex_fields, default_department)
                         _set_custom_fields(contact, contact_data, cf_names, custom_fields, is_first_for_entity)
                         _set_subscriptions(contact, contact_data)
+
                     return HttpResponseRedirect(reverse("balafon_homepage"))
                 else:
                     form = forms.ContactsImportConfirmForm(instance=contacts_import)

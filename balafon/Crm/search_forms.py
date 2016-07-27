@@ -978,7 +978,10 @@ class ContactLanguageSearchForm(SearchFieldForm):
 
     def get_lookup(self):
         """lookup"""
-        return {'favorite_language': self.value}
+        if self.value:
+            return {'fav_lang__code': self.value}
+        else:
+            return {'fav_lang__isnull': True}
 
 
 class ContactFirstnameSearchForm(SearchFieldForm):

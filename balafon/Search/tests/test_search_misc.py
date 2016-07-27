@@ -806,9 +806,12 @@ class LanguageSearchTest(BaseTestCase):
     def test_contact_language(self):
         """search language is set"""
 
-        contact1 = mommy.make(models.Contact, lastname="ABCD", favorite_language="")
-        contact2 = mommy.make(models.Contact, lastname="Azerty", favorite_language="fr")
-        contact3 = mommy.make(models.Contact, lastname="Qwerty", favorite_language="en")
+        french = mommy.make(models.Language, code='fr')
+        english = mommy.make(models.Language, code='en')
+
+        contact1 = mommy.make(models.Contact, lastname="ABCD", fav_lang=None)
+        contact2 = mommy.make(models.Contact, lastname="Azerty", fav_lang=french)
+        contact3 = mommy.make(models.Contact, lastname="Qwerty", fav_lang=english)
 
         response = self.client.post(
             reverse('search'),
@@ -823,9 +826,12 @@ class LanguageSearchTest(BaseTestCase):
     def test_contact_no_language(self):
         """search language is not set"""
 
-        contact1 = mommy.make(models.Contact, lastname="ABCD", favorite_language="")
-        contact2 = mommy.make(models.Contact, lastname="Azerty", favorite_language="fr")
-        contact3 = mommy.make(models.Contact, lastname="Qwerty", favorite_language="en")
+        french = mommy.make(models.Language, code='fr')
+        english = mommy.make(models.Language, code='en')
+
+        contact1 = mommy.make(models.Contact, lastname="ABCD", fav_lang=None)
+        contact2 = mommy.make(models.Contact, lastname="Azerty", fav_lang=french)
+        contact3 = mommy.make(models.Contact, lastname="Qwerty", fav_lang=english)
 
         response = self.client.post(
             reverse('search'),

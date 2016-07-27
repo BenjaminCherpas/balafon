@@ -45,6 +45,19 @@ class NamedElement(models.Model):
         abstract = True
 
 
+class Language(models.Model):
+    """a language"""
+    code = models.CharField(max_length=10, verbose_name=_(u'code'))
+    name = models.CharField(max_length=10, verbose_name=_(u'name'))
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _(u'Language')
+        verbose_name_plural = _(u'Languages')
+
+
 class LastModifiedModel(TimeStampedModel):
     """track the user who last modified an object"""
 
@@ -645,13 +658,30 @@ class Contact(AddressModel):
     
     favorites = GenericRelation(Favorite)
 
-    favorite_language = models.CharField(
-        _("favorite language"), max_length=10, default="", blank=True, choices=settings.get_language_choices()
+    fav_lang = models.ForeignKey(
+        Language,
+        verbose_name=_(u"favorite language"),
+        default=None,
+        blank=True,
+        null=True
     )
     
     def __init__(self, *args, **kwargs):
         super(Contact, self).__init__(*args, **kwargs)
         self.old_address = self.address
+
+    @property
+    def favorite_language(self):
+        if self.fav_lang:
+            return self.fav_lang.code
+        return ''
+
+    @favorite_language.setter
+    def _set_favorite_language(self, value):
+        try:
+            self.fav_lang = Language.objects.get(code=value)
+        except Language.DoesNotExist:
+            pass
 
     def get_view_url(self):
         if self.entity.is_single_contact:

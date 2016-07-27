@@ -98,10 +98,10 @@
       {% endif %}
       {% endwith %}
 
-      {% if contact.favorite_language %}
+      {% if contact.fav_lang %}
       <tr><td>
         <span data-toggle="tooltip" data-placement="bottom" title="{% trans 'Favorite language' %}" class="glyphicon glyphicon-globe"></span>
-        {{contact.get_favorite_language_display}}
+        {{contact.fav_lang.name}}
       </td></tr>
       {% endif %}
     </table>
