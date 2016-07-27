@@ -3,12 +3,8 @@
 
 from datetime import datetime
 import email
-import imaplib
 import os.path
 import re
-import json
-
-
 
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -57,48 +53,58 @@ def mail_contacts_import(request):
         instance = models.MailImport(imported_by=request.user, date=datetime.now())
         form = forms.MailImportForm(request.POST, request.FILES, instance=instance)
         if form.is_valid():
-            addr = request.POST.get('mail_address')
-            passwd = request.POST.get('password')
-            numprov = request.POST.get('provider')
-            if numprov and addr and passwd:
-                prov = models.MailProvider.objects.get(id=numprov)
-                exped = ""
-                if prov.port == 993:
-                    mail = imaplib.IMAP4_SSL(prov.imapServer, prov.port)
-                else:
-                    mail = imaplib.IMAP4(prov.imapServer, prov.port)
-                mail.login(addr, passwd)
-                mail.select("inbox")
-                
-                (status, res) = mail.list()
-                # renvoie ('OK', ['nombre de messages']) ou sinon ('NO', ['message erreur'])
-                (status, numberMessages) = mail.select('INBOX')
-                # print status, 'Nombre de messages = ', numberMessages
-                # renvoie par exemple ('OK', ['1 2 3 4 5']) qui sont les numeros des messages.
-                search_critera = 'REVERSE DATE'
-                (status, searchRes) = mail.search(None, 'ALL')
-                # Recuperation des numeros des messages
-                ids = searchRes[0].split()
-                for i in range(len(ids)-100, len(ids)):
-                    # Recupere seulement l'expediteur et le sujet dans le header
-                    (status, res) = mail.fetch(ids[i], '(BODY[HEADER.FIELDS (FROM SUBJECT)])')
-                    for responsePart in res:
-                        if isinstance(responsePart, tuple):
-                            msg = email.message_from_string(responsePart[1])
-                            sender = msg['from']
-                            if "<" in sender:
-                                sender=sender.split("<")[1]
-                                sender=sender.split(">")[0]
-                            if exped == "":
-                                exped = sender
-                            elif exped != "" and not sender in exped:
-                                exped = exped + "\t" + sender
-                contact_import = form.save()
-                contact_import.content = exped
-                contact_import.save()
-                mail.close()
-                mail.logout()
-            return HttpResponseRedirect(reverse('crm_confirm_mail_import', args=[contact_import.id]))
+            email_count = form.cleaned_data['email_count']
+            emails_list = ""
+            mail = form.mail
+            mail.select("inbox")
+
+            (status, response) = mail.list()
+            # renvoie ('OK', ['nombre de messages']) ou sinon ('NO', ['message erreur'])
+            (status, numberMessages) = mail.select('INBOX')
+
+            # print status, 'Nombre de messages = ', numberMessages
+            # renvoie par exemple ('OK', ['1 2 3 4 5']) qui sont les numeros des messages.
+            search_critera = 'REVERSE DATE'
+            (status, searchRes) = mail.search(None, 'ALL')
+
+            # Recuperation des numeros des messages
+            ids = searchRes[0].split()
+
+            contact_import = form.save()
+
+            for i in range(len(ids) - email_count, len(ids)):
+                # Recupere seulement l'expediteur et le sujet dans le header
+                (status, response) = mail.fetch(ids[i], '(BODY[HEADER.FIELDS (FROM SUBJECT)])')
+                for response_part in response:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_string(response_part[1])
+                        sender = msg['from']
+                        name = ''
+                        if "<" in sender:
+                            name, sender = sender.split("<")
+                            sender = sender.split(">")[0]
+                            name = name.strip().strip('"')
+                        sender = sender.lower()
+                        address_already_processed = models.MailImportAddress.objects.filter(address=sender).exists()
+                        if not address_already_processed and not models.Contact.objects.filter(email=sender).exists():
+
+                            if ' ' in name:
+                                words = name.split()
+                                firstname = words[0]
+                                lastname = u' '.join(words[1:])
+                            else:
+                                lastname = name
+                                firstname = ''
+
+                            models.MailImportAddress.objects.create(
+                                mail_import=contact_import,
+                                address=sender,
+                                lastname=lastname,
+                                firstname=firstname
+                            )
+            mail.close()
+            mail.logout()
+        return HttpResponseRedirect(reverse('crm_confirm_mail_import', args=[contact_import.id]))
     else:
         form = forms.MailImportForm()
 
@@ -363,7 +369,7 @@ def _create_contact(contact_data, contacts_import, entity_dict):
         is_first_for_entity = entity.name not in entity_dict
         entity_dict[entity.name] = True
 
-    #Contact
+    # Contact
     contact = models.Contact.objects.get_or_create(
         entity=entity, firstname=contact_data['firstname'], lastname=contact_data['lastname']
     )[0]
@@ -600,39 +606,54 @@ def unsubscribe_contacts_import(request):
 def confirm_mail_import(request, import_id):
     """view"""
     if request.method == 'POST':
-        for i in range(100):
-            if request.POST.get("check" + str(i)) == "on":
+        created = []
+
+        mail_import = get_object_or_404(models.MailImport, id=import_id)
+
+        group = models.Group.objects.get_or_create(name=_(u'Email import {0}'.format(mail_import)))[0]
+
+        for i in range(mail_import.mailimportaddress_set.count()):
+            email = request.POST.get("mail" + str(i))
+            if email and request.POST.get("check" + str(i)) == "on":
                 company = request.POST.get("company" + str(i))
-                if company == "":
-                    company = models.Entity(name="", is_single_contact=True)
+                lastname = request.POST.get("name" + str(i))
+                firstname = request.POST.get("fname" + str(i))
+
+                if not company:
+                    company = models.Entity(
+                        name=u"{0} {1}".format(lastname, firstname).strip().upper(),
+                        is_single_contact=True
+                    )
                     company.save()
                     contact = models.Contact.objects.get(entity=company)
                 elif models.Entity.objects.filter(name=company).exists():
-                    comp = models.Entity.objects.filter(name=company)
-                    company = comp[0]
+                    company = models.Entity.objects.filter(name=company)[0]
                     contact = models.Contact(entity=company)
                 else:
                     company = models.Entity(name=company)
                     company.save()
-                    contact = contact = models.Contact.objects.get(entity=company)
-                contact.email = request.POST.get("mail" + str(i))
-                if request.POST.get("name" + str(i)) != "":
-                    contact.lastname = request.POST.get("name" + str(i))
-                if request.POST.get("fname" + str(i)) != "":
-                    contact.firstname = request.POST.get("fname" + str(i))
-                contact.entity = company
+                    contact = models.Contact.objects.get(entity=company)
+                contact.email = email
+                contact.lastname = lastname
+                contact.firstname = firstname
                 contact.save()
-        return HttpResponseRedirect(reverse('crm_view_entities_list'))
+                group.contacts.add(contact)
+                group.save()
+                created.append(email)
+
+        success(request, _(u'{0} contacts have been created'.format(len(created))))
+        return HttpResponseRedirect(reverse('crm_edit_group', args=[group.id]))
     else:    
-        exped = []
-        content = models.MailImport.objects.get(id=import_id)
-        content = content.content.split("\t")
-        for word in content:
+        mail_addresses = []
+        mail_import = models.MailImport.objects.get(id=import_id)
+
+        for mail_import_address in mail_import.mailimportaddress_set.all():
+            word = mail_import_address.address
             if "noreply" in word or "NOREPLY" in word or "mailing" in word or "newsletter" in word:
                 pass
             else:
-                exped.append(word)
-        return render(request, 'Crm/confirm_mail_import.html', {'exped': exped, 'nb': 0})
+                mail_addresses.append(mail_import_address)
+        return render(request, 'Crm/confirm_mail_import.html', {'mail_addresses': mail_addresses})
 
 
 @user_passes_test(can_access)

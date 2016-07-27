@@ -294,7 +294,7 @@ class CloneActionForm(forms.Form):
             for action_type in action_type.next_action_types.all().order_by('order_index')
         ]
         self.fields['action_type'].choices = choices
-        #If only 1 choice = change it to a confirmation
+        # If only 1 choice = change it to a confirmation
         if len(choices) == 1:
             self.fields['action_type'].initial = choices[0][0]
             self.fields['action_type'].widget = forms.HiddenInput()

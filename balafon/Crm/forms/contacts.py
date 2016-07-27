@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Crm forms"""
 
+import imaplib
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -497,13 +499,35 @@ class UnsubscribeContactsImportForm(forms.Form):
 
 class MailImportForm(BsModelForm):
     """form for importing data from a mailbox"""
-    
-    password = forms.CharField(widget=forms.PasswordInput)
+    mail = None
+    password = forms.CharField(widget=forms.PasswordInput, label=_(u'Password'))
+    email_count = forms.IntegerField(
+        initial=100,
+        label=_(u'Email count'),
+        help_text=_(u'How many of the last emails to proceed')
+    )
     
     class Meta:
         """form from model"""
         model = models.MailImport
         fields = ('provider', 'mail_address', )
+
+    def __init__(self, *args, **kwargs):
+        super(MailImportForm, self).__init__(*args, **kwargs)
+
+    def clean_password(self):
+        provider = self.cleaned_data['provider']
+        email_address = self.cleaned_data['mail_address']
+        password = self.cleaned_data['password']
+        if provider.port == 993:
+            self.mail = imaplib.IMAP4_SSL(provider.imapServer, provider.port)
+        else:
+            self.mail = imaplib.IMAP4(provider.imapServer, provider.port)
+        try:
+            self.mail.login(email_address, password)
+        except Exception as err:
+            raise forms.ValidationError(unicode(err))
+        return password
 
     class Media:
         """media files"""

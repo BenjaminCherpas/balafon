@@ -264,10 +264,16 @@ class MailProviderAdmin(admin.ModelAdmin):
 admin.site.register(models.MailProvider, MailProviderAdmin)
 
 
+class MailImportAddressInline(admin.TabularInline):
+    model = models.MailImportAddress
+    fields = ['address', 'lastname', 'firstname']
+
+
 class MailImportAdmin(admin.ModelAdmin):
     list_display = ['mail_address', 'date']
     list_filter = ['mail_address']
     search_fields = ['mail_address']
+    inlines = [MailImportAddressInline]
 
 admin.site.register(models.MailImport, MailImportAdmin)
 

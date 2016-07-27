@@ -1751,14 +1751,28 @@ class MailImport(models.Model):
     mail_address = models.EmailField(_(u'Email address'), max_length=200)
     date = models.DateField(_(u'Date'), default=None)
     imported_by = models.ForeignKey(User, verbose_name=_(u'imported by'), default=None)
-    content = models.CharField(_(u'Content'), max_length=10000, default="")
 
     class Meta:
         verbose_name = _(u'mail import')
         verbose_name_plural = _(u'mail imports')
     
     def __unicode__(self):
-        return self.mail_address
+        return u'{0} - {1}'.format(self.mail_address, self.date)
+
+
+class MailImportAddress(models.Model):
+    """every imported address"""
+    mail_import = models.ForeignKey(MailImport, verbose_name=_(u'mail import'))
+    address = models.CharField(max_length=200, verbose_name=_(u'email address'), db_index=True)
+    lastname = models.CharField(max_length=200, verbose_name=_(u'lastname'), default=u'', blank=True)
+    firstname = models.CharField(max_length=200, verbose_name=_(u'firstname'), default=u'', blank=True)
+
+    class Meta:
+        verbose_name = _(u'mail import address')
+        verbose_name_plural = _(u'mail import addresses')
+
+    def __unicode__(self):
+        return self.address
 
 
 class ErrorMailAddress(models.Model):

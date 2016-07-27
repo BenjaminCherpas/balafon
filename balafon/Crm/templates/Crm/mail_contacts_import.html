@@ -21,9 +21,11 @@
       {% include "bs/form_fields.html" %}
   
     <div class="row">
-      <div class="col-md-6 col-md-offset-6">
-        <input class="btn btn-md btn-primary" type="submit" value="{% trans "Import"%}">
-        <a class="btn btn-md btn-default" href="{{cancel_url}}">{% trans "Cancel" %}</a>
+      <div class="col-md-12">
+        <div class="pull-right">
+          <input class="btn btn-md btn-primary" type="submit" value="{% trans "Import" %}">
+          <a class="btn btn-md btn-default" href="{{cancel_url}}">{% trans "Cancel" %}</a>
+        </div>
       </div>
     </div>
   </form>
