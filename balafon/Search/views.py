@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 """search views and actions"""
 
-import hashlib
 import json
-import os
-import urllib
 import xlwt
 
 from django.db.models import Q
@@ -16,6 +13,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404, render
 from django.template import RequestContext, Context, Template
+from django.utils.text import mark_safe
 from django.utils.translation import ugettext as _
 
 from colorbox.decorators import popup_redirect, popup_close
@@ -27,6 +25,7 @@ from balafon.permissions import can_access
 from balafon.utils import logger, log_error, HttpResponseRedirectMailtoAllowed
 from balafon.Crm.models import Entity, Contact, Group, Action, Opportunity, City, CustomField
 from balafon.Crm import settings as crm_settings
+from balafon.Crm.utils import gravatar_url
 from balafon.Emailing.models import Emailing
 from balafon.Emailing.forms import NewEmailingForm
 from balafon.Search.models import Search, SearchResult
@@ -656,7 +655,7 @@ def export_to_pdf(request):
 @popup_redirect
 def display_map(request, search_id):
     search = SearchResult.objects.get(id=search_id)
-    searchres = search.results.split("\t")
+    searchres = search.result_ids.split("\t")
     result_ids = []
     for r in searchres:
         result_ids.append(int(r))
@@ -666,47 +665,40 @@ def display_map(request, search_id):
 @user_passes_test(can_access)
 def import_gravatar(request, search_id):
     search = SearchResult.objects.get(id=search_id)
-    searchres = search.results.split("\t")
-    result_ids = []
-    for r in searchres:
-        eid = int(r)
-        if eid % 10 == 0:
-            eid = eid / 10
-            etype = "c"
+    result_ids = search.result_ids.split("\t")
+    gravatars = []
+    for result_id in result_ids:
+        elt_id = int(result_id)
+        # TODO : Clarify
+        if elt_id % 10 == 0:
+            elt_id = elt_id / 10
+            elt_type = "c"
         else:
-            eid = (eid - 1) / 10
-            etype = "e"
-        if etype == "e":
-            entity = Entity.objects.get(id=eid)
+            elt_id = (elt_id - 1) / 10
+            elt_type = "e"
+        if elt_type == "e":
+            entity = Entity.objects.get(id=elt_id)
             contacts = Contact.objects.filter(entity=entity)
-            for c in contacts:
-                    if c.email:
-                        img_url = gravatar_url(c.email)
-                        c.photo_url = img_url
-                        c.save()
+            for contact in contacts:
+                if contact.email:
+                    img_url = gravatar_url(contact.email)
+                    if img_url:
+                        gravatars.append(contact)
+                        contact.photo_url = img_url
+                        contact.save()
         else:
-            c = Contact.objects.get(id = eid)
-            if c.email:
-                img_url = gravatar_url(c.email)
-                c.photo_url = img_url
-                c.save()
-    ct_w_photo = Contact.objects.exclude(photo_url=None)
-    file2 = open("dev/balafon/balafon/Crm/static/img/single-contact.png").read()
-    f2 = hashlib.md5(file2).hexdigest()
-    for c in ct_w_photo:
-        urllib.urlretrieve(c.photo_url, "dev/balafon/balafon/Crm/static/img/online.png")
-        file1 = open("dev/balafon/balafon/Crm/static/img/online.png").read()
-        f1 = hashlib.md5(file1).hexdigest()
-        if f1 == f2:
-            c.photo_url = None
-            c.save()
-        os.remove("dev/balafon/balafon/Crm/static/img/online.png")
-    return HttpResponse('Images have been imported with success', content_type='text/plain')
-          
-            
-def gravatar_url(email, size=64):
-    try:
-        default = "http://image.noelshack.com/fichiers/2016/23/1465294200-single-contact.png"
-        return "https://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(email.lower()).hexdigest(), urllib.urlencode({'d':default, 's':str(size)}))
-    except UnicodeEncodeError:
-        pass
+            contact = Contact.objects.get(id = elt_id)
+            if contact.email:
+                img_url = gravatar_url(contact.email)
+                if img_url:
+                    gravatars.append(contact)
+                    contact.photo_url = img_url
+                    contact.save()
+    return HttpResponse(
+        mark_safe(
+            _(u'{0} Images have been imported with success:<br />{1}').format(
+                len(gravatars), u'<br />'.join([unicode(contact) for contact in gravatars])
+            )
+        ),
+        content_type='text/plain'
+    )

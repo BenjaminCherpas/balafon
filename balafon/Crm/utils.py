@@ -4,13 +4,14 @@
 import csv
 import codecs
 import difflib
+import hashlib
+import urllib
 
 from django.contrib.auth.models import User
 from django.db.models import Q
 
 from balafon.Crm import models
 from balafon.Crm import settings as crm_settings
-from balafon.utils import logger
 
 
 def filter_icontains_unaccent(queryset, field, text):
@@ -154,3 +155,17 @@ def get_suggested_same_as_contacts(contact_id=None, lastname='', firstname='', e
         if contact_id:
             queryset = queryset.exclude(id=contact_id)
         return queryset
+
+
+def gravatar_url(email, size=64):
+    """import image from gravatar service"""
+    try:
+        url = "https://www.gravatar.com/avatar/{0}?{1}".format(
+            hashlib.md5(email.lower()).hexdigest(),
+            urllib.urlencode({'d': '404', 's': str(size)})
+        )
+        response = urllib.urlopen(url)
+        if response.getcode() == 200:
+            return url
+    except UnicodeEncodeError:
+        pass

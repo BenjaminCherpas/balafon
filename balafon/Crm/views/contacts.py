@@ -2,8 +2,6 @@
 """contacts"""
 
 import json
-import hashlib
-import urllib
 
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import user_passes_test
@@ -16,7 +14,7 @@ from django.utils.translation import ugettext as _
 from colorbox.decorators import popup_redirect
 
 from balafon.Crm import models, forms
-from balafon.Crm.utils import get_actions_by_set
+from balafon.Crm.utils import get_actions_by_set, gravatar_url
 from balafon.permissions import can_access
 from balafon.utils import log_error
 
@@ -315,7 +313,3 @@ def import_gravatar(request, contact_id):
         pass
         
     return HttpResponseRedirect(reverse("crm_view_contact", args=[contact_id]))
-
-def gravatar_url(email, size=64):
-        default = "http://uwm.edu/libraries/wp-content/plugins/uwmpeople/images/profile-default.jpg"
-        return "https://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(email.lower()).hexdigest(), urllib.urlencode({'d':default, 's':str(size)}))

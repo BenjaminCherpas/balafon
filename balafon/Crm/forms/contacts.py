@@ -42,7 +42,7 @@ class ContactForm(FormWithFieldsetMixin, ModelFormWithAddress):
             'gender', 'lastname', 'firstname', 'birth_date', 'title', 'role', 'job',
             'email', 'phone', 'mobile', 'favorite_language',
             'street_number', 'street_type', 'address', 'address2', 'address3', 'zip_code', 'city', 'cedex', 'country',
-            'main_contact', 'email_verified', 'has_left', 'accept_notifications', 'photo',
+            'main_contact', 'email_verified', 'has_left', 'accept_notifications', 'photo', 'photo_url',
             'billing_street_number', 'billing_street_type', 'billing_address', 'billing_address2', 'billing_address3',
             'billing_zip_code', 'billing_city', 'billing_cedex', 'billing_country', 'same_as_suggestions'
         )
@@ -84,7 +84,7 @@ class ContactForm(FormWithFieldsetMixin, ModelFormWithAddress):
                 'fields': ['main_contact', 'email_verified', 'has_left', 'accept_notifications'],
                 'legend': _(u'Options')
             }),
-            ('photo', {'fields': ['photo'], 'legend': _(u'Photo')}),
+            ('photo', {'fields': ['photo', 'photo_url', ], 'legend': _(u'Photo')}),
         ]
 
     def __init__(self, *args, **kwargs):
