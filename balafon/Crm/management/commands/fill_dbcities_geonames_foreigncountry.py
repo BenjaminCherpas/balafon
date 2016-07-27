@@ -79,11 +79,11 @@ def manage_spe_cases():
 def fill_db(cntry, country_name):
     """Add all the cities from GeoNames in the database"""
 
-    with open("dev/balafon/balafon/Crm/fixtures/" + cntry + ".txt","r") as file1:
+    with open("dev/balafon/balafon/Crm/fixtures/" + cntry + ".csv","r") as file1:
         nbcities = 0
         for line in file1:
             nbcities += 1
-    with codecs.open("dev/balafon/balafon/Crm/fixtures/" + cntry + ".txt","r","utf8") as file1:
+    with codecs.open("dev/balafon/balafon/Crm/fixtures/" + cntry + ".csv","r","utf8") as file1:
         count = 0
         for l in file1:
             try:
@@ -94,13 +94,20 @@ def fill_db(cntry, country_name):
                 if len(Zone.objects.filter(name=country_name, type=ZoneType.objects.get(name="Pays"))) > 0:
                     zonec = Zone.objects.filter(name=country_name, type=ZoneType.objects.get(name="Pays"))[0]
                 else:
-                    zonec = Zone(name=country_name, type=ZoneType.objects.get(name="Pays"))
+                    zonec = Zone(
+                        name=country_name, type=ZoneType.objects.get(name="Pays")
+                    )
                     zonec.save()
                 if reg != "":
                     if len(Zone.objects.filter(name=reg, type=ZoneType.objects.get(name="Région".decode('utf8')))) > 0:
                         zoner = Zone.objects.filter(name=reg, type=ZoneType.objects.get(name="Région".decode('utf8')))[0]
                     else:
-                        zoner = Zone(name=reg, type=ZoneType.objects.get(name="Région".decode('utf8')), parent=zonec, code=words[4])
+                        zoner = Zone(
+                            name=reg,
+                            type=ZoneType.objects.get(name="Région".decode('utf8')),
+                            parent=zonec,
+                            code=words[4]
+                        )
                         zoner.save()
                 else:
                     zoner = zonec
@@ -112,11 +119,14 @@ def fill_db(cntry, country_name):
                         zoned.save()
                 else:
                     zoned = zoner
-                new=City(name=cname, parent=zoned, district_id=words[8], latitude=float(words[9]), longitude=float(words[10]), zip_code=words[1], geonames_valid=True, country=country_name)
+                new = City(
+                    name=cname, parent=zoned, district_id=words[8], latitude=float(words[9]),
+                    longitude=float(words[10]), zip_code=words[1], geonames_valid=True, country=country_name
+                )
                 new.save()
                 count += 1
                 if count % 500 == 0:
-                    print(`count` + "/" + `nbcities`)
+                    print(str(count) + "/" + str(nbcities))
             except UnicodeEncodeError:
                 print("Error " + words[1])
                 pass
@@ -139,7 +149,7 @@ def update_existingdb(country_name):
             for i in rightcities:
                 rcities.append(i.name)
         try:
-            name_changed = 0        #Detect if the city name has already changed (0 if not / 1 if it changed)
+            name_changed = 0  # Detect if the city name has already changed (0 if not / 1 if it changed)
             cname1 = remove_accents(c.name.lower())
             matches = difflib.get_close_matches(cname1, rcities, cutoff=0.5)
             for m in matches:
@@ -162,7 +172,7 @@ def update_existingdb(country_name):
                         special_cases(c, possibilities)
                     print("[Special Cases] " + c.name)
         except UnicodeEncodeError:
-            special_cases(c,"")
+            special_cases(c, "")
             pass
         except AttributeError:
             pass    
@@ -229,6 +239,7 @@ def update_zip_code():
             print("Unicode Error")
             pass
 
+
 class Command(BaseCommand):
     
     def handle(self, *args, **options):
@@ -287,23 +298,23 @@ class Command(BaseCommand):
 
         urllib.urlretrieve(
             'http://download.geonames.org/export/zip/' + cntry + '.zip',
-            'dev/balafon/balafon/Crm/fixtures/' + cntry + '.zip'
+            cntry + '.zip'
         )
-        zfile = zipfile.ZipFile('dev/balafon/balafon/Crm/fixtures/' + cntry + '.zip','r')
-        for i in zfile.namelist():
-            if i== cntry + '.txt':
-                data = zfile.read(i)                   ## lecture du fichier compresse 
-                fp = open('dev/balafon/balafon/Crm/fixtures/' + cntry + '.txt', "wb")  ## creation en local du nouveau fichier 
-                fp.write(data)                         ## ajout des donnees du fichier compresse dans le fichier local 
+        zfile = zipfile.ZipFile(cntry + '.zip','r')
+        for file_name in zfile.namelist():
+            if file_name == cntry + '.csv':
+                data = zfile.read(file_name)  # lecture du fichier compresse
+                fp = open(cntry + '.csv', "wb")  # creation en local du nouveau fichier
+                fp.write(data)  # ajout des donnees du fichier compresse dans le fichier local
                 fp.close() 
         zfile.close()
-        os.remove('dev/balafon/balafon/Crm/fixtures/' + cntry + '.zip')
+        os.remove(cntry + '.zip')
         
         choose = -1
         while choose != 0:        
             print("\nChoose the action :")
             print("\t[0] Quit")
-            print("\t[1] Fill the database from \'fixtures/" + cntry + ".txt\'")
+            print("\t[1] Fill the database from \'fixtures/" + cntry + ".csv\'")
             print("\t[2] Manage special cases")
             print("\t[3] Update contacts and entities and delete cities appearing twice or more")
             print("\t[4] Update existing cities")
