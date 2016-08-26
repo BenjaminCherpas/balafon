@@ -185,8 +185,11 @@
 <li><a href="{% url "search_add_contacts_to_group" %}" class="action-button" class="colorbox-form">
   <span class="glyphicon glyphicon-certificate"></span> {% trans "Add to groups" %}
 </a></li>
+<li><a href="{% url "search_print_labels_pdf" %}" class="action-button" class="colorbox-form">
+  <span class="glyphicon glyphicon-tags"></span> {% trans "Labels" %}
+</a></li>
 <li><a href="{% url "search_export_to_pdf" %}" class="action-button" class="colorbox-form">
-  <span class="glyphicon glyphicon-print"></span> {% trans "PDF" %}
+  <span class="glyphicon glyphicon-file"></span> {% trans "PDF" %}
 </a></li>
 <li><a href="{% url "search_display_map" search_id %}" class="action-button" class="colorbox-form">
   <span class="glyphicon glyphicon-map-marker"></span> {% trans "Display on map" %}

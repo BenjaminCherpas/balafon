@@ -1,0 +1,24 @@
+{% extends "pdf/base.html" %}
+{% load i18n balafon_pdf %}
+{% block extra_head %}
+  <style>
+  .odd {
+    background: #f0f0f0;
+  }
+  </style>
+{% endblock %}
+
+{% block content %}
+    <table>
+    {% for c in contacts %}
+        <tr class="{% if forloop.counter|divisibleby:2 %}odd{% endif %}">
+        <td>{{ c.fullname }}</td>
+        <td>{{ c.entity }}</td>
+        <td>{{ c.get_full_address }}</td>
+        <td>{{ c.get_email }}</td>
+        <td>{{ c.get_phone }}</td>
+        <td>{{ c.mobile }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

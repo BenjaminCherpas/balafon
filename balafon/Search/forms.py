@@ -661,11 +661,7 @@ class PdfTemplateForm(SearchActionForm):
             choices = settings.BALAFON_PDF_TEMPLATES
         else:
             choices = (
-                ('pdf/labels_24.html', _(u'etiquettes 24')),
-                ('pdf/labels_21.html', _(u'etiquettes 21')),
-                ('pdf/agipa_21.html', _(u'Agipa 21')),
-                ('pdf/labels_16.html', _(u'etiquettes 16')),
-                ('pdf/address_strip.html', _(u'bande adresse')),
+                ('pdf/contacts-list.html', _(u'contacts list')),
             )
         
         self.fields['template'] = forms.ChoiceField(
@@ -704,7 +700,38 @@ class PdfTemplateForm(SearchActionForm):
         for field in ('template', 'contacts', 'search_dict'):
             extra_data.pop(field)
         return extra_data
-        
+
+
+class PrintLabelsPdfForm(SearchActionForm):
+    """Form for Pdf generation"""
+    search_dict = forms.CharField(widget=forms.HiddenInput())
+    start_at = forms.IntegerField(
+        label=_(u'Start at'), initial=0, required=False,
+        help_text=_(u'How many blank labels before printing the first one. It allows to reuse a labels page')
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(PrintLabelsPdfForm, self).__init__(*args, **kwargs)
+
+        if getattr(settings, 'BALAFON_LABELS_PDF_TEMPLATES', None):
+            choices = settings.BALAFON_LABELS_PDF_TEMPLATES
+        else:
+            choices = (
+                ('pdf/labels_24.html', _(u'etiquettes 24')),
+                ('pdf/labels_21.html', _(u'etiquettes 21')),
+                ('pdf/agipa_21.html', _(u'Agipa 21')),
+                ('pdf/labels_16.html', _(u'etiquettes 16')),
+            )
+
+        self.fields['template'] = forms.ChoiceField(
+            choices=choices,
+            required=True,
+            label=_(u'template'),
+            help_text=_(u'Select the type of labels to generate')
+        )
+        self.fields['template'].widget.attrs.update({'class': 'form-control'})
+        self.fields['start_at'].widget.attrs.update({'class': 'form-control'})
+
         
 class ActionForContactsForm(forms.ModelForm):
     """Create action for contacts"""

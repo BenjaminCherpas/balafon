@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """search views and actions"""
 
+from datetime import datetime
 import json
 import xlwt
 
@@ -31,7 +32,7 @@ from balafon.Emailing.forms import NewEmailingForm
 from balafon.Search.models import Search, SearchResult
 from balafon.Search.forms import (
     ActionForContactsForm, FieldChoiceForm, GroupForContactsForm, QuickSearchForm, PdfTemplateForm, SearchForm,
-    SearchNameForm, get_field_form, ContactsAdminForm
+    SearchNameForm, get_field_form, ContactsAdminForm, PrintLabelsPdfForm
 )
 
 
@@ -551,10 +552,10 @@ def contacts_admin(request):
                     nb_contacts = 0
                     contacts = form.get_contacts()
                     subscribe = form.cleaned_data['subscribe_newsletter']
-                    for c in contacts:
-                        if c.accept_newsletter != subscribe:
-                            c.accept_newsletter = subscribe
-                            c.save()
+                    for contact in contacts:
+                        if contact.accept_newsletter != subscribe:
+                            contact.accept_newsletter = subscribe
+                            contact.save()
                             nb_contacts += 1
                     if subscribe:
                         messages.add_message(request, messages.SUCCESS,
@@ -602,7 +603,7 @@ def export_to_pdf(request):
     try:
         if request.method == "POST":
             if "export_to_pdf" in request.POST:
-                #called by the colorbox
+                # called by the colorbox
                 form = PdfTemplateForm(request.POST)
                 if form.is_valid():
                     template_name = form.cleaned_data['template']
@@ -611,7 +612,7 @@ def export_to_pdf(request):
                         "contacts": contacts,
                         "search_dict": json.loads(form.cleaned_data['search_dict']),
                     }
-                    
+
                     context = form.patch_context(context)
                     
                     pdf_options = getattr(settings, 'BALAFON_PDF_OPTIONS', None)
@@ -647,6 +648,64 @@ def export_to_pdf(request):
                     )
     except Exception, msg:
         logger.exception("export_to_pdf")
+        raise
+    raise Http404
+
+
+@user_passes_test(can_access)
+@popup_redirect
+@log_error
+def print_labels_pdf(request):
+    try:
+        if request.method == "POST":
+
+            if "print_labels_pdf" in request.POST:
+                # called by the colorbox
+                form = PrintLabelsPdfForm(request.POST)
+                if form.is_valid():
+                    template_name = form.cleaned_data['template']
+                    start_at = form.cleaned_data['start_at']
+                    contacts = form.get_contacts()
+
+                    context = {
+                        "contacts": [None] * start_at + list(contacts),
+                        "search_dict": json.loads(form.cleaned_data['search_dict']),
+                        "start_at": start_at,
+                    }
+
+                    pdf_options = getattr(settings, 'BALAFON_PDF_OPTIONS', None)
+                    if pdf_options is None:
+                        cmd_options = {'margin-top': 0, 'margin-bottom': 0, 'margin-right': 0, 'margin-left': 0, }
+                    else:
+                        cmd_options = pdf_options.get(template_name, {})
+
+                    pdf_view = PDFTemplateView(
+                        filename='balafon_labels_{0}.pdf'.format(datetime.now().strftime('%Y-%m-%d-%H-%M-%S')),
+                        template_name=template_name,
+                        request=request,
+                        cmd_options=cmd_options
+                    )
+                    return pdf_view.render_to_response(context)
+
+                else:
+                    return render_to_response(
+                        'Search/print_labels_pdf.html',
+                        {'form': form},
+                        context_instance=RequestContext(request)
+                    )
+            else:
+                search_form = SearchForm(request.POST)
+                if search_form.is_valid():
+                    contacts = search_form.get_contacts()
+                    search_dict = json.dumps(search_form.serialize())
+                    form = PrintLabelsPdfForm(initial={'contacts': contacts, 'search_dict': search_dict})
+                    return render_to_response(
+                        'Search/print_labels_pdf.html',
+                        {'form': form},
+                        context_instance=RequestContext(request)
+                    )
+    except Exception, msg:
+        logger.exception("print_labels_pdf")
         raise
     raise Http404
 
