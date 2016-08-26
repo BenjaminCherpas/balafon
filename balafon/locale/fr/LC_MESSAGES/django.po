@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-26 16:49+0200\n"
+"POT-Creation-Date: 2016-08-26 17:34+0200\n"
 "PO-Revision-Date: 2015-07-30 17:49+0100\n"
 "Last-Translator: Luc Jean <ljean@apidev.fr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -233,7 +233,7 @@ msgstr "Adresse"
 msgid "Billing address"
 msgstr "Adresse de facturation"
 
-#: Crm/forms/contacts.py:85 config.py:134
+#: Crm/forms/contacts.py:85 config.py:137
 msgid "Options"
 msgstr "Options"
 
@@ -2943,29 +2943,41 @@ msgstr "Lien magique"
 msgid "Magic links"
 msgstr "Liens magiques"
 
-#: Emailing/search_forms.py:34
+#: Emailing/search_forms.py:35
 msgid "Unknown emailing"
 msgstr "Emailing inconnu"
 
-#: Emailing/search_forms.py:40
+#: Emailing/search_forms.py:41
 msgid "Emailing sent"
 msgstr "A reçu cet emailing"
 
-#: Emailing/search_forms.py:52
+#: Emailing/search_forms.py:53
 msgid "Emailing opened"
 msgstr "A ouvert cet emailing"
 
-#: Emailing/search_forms.py:64
+#: Emailing/search_forms.py:65
 msgid "Emailing send to"
 msgstr "Envoi de l'emailing en cours pour"
 
-#: Emailing/search_forms.py:76
+#: Emailing/search_forms.py:77
 msgid "Emailing bounce"
 msgstr "Problème de réception d'un emailing"
 
-#: Emailing/search_forms.py:93
+#: Emailing/search_forms.py:94
 msgid "Emailing contacts"
 msgstr "Destinataires d'un emailing"
+
+#: Emailing/search_forms.py:131
+msgid "Newsletter sent"
+msgstr "A reçu cette newsletter"
+
+#: Emailing/search_forms.py:140
+msgid "Newsletter opened"
+msgstr "A ouvert cette newsletter"
+
+#: Emailing/search_forms.py:149
+msgid "Newsletter recipient"
+msgstr "Destinataire de cette newsletter"
 
 #: Emailing/templates/Emailing/_section_emailing.html:6
 #: Emailing/templates/Emailing/_section_newsletters.html:16
@@ -3585,7 +3597,9 @@ msgstr "Débute à"
 msgid ""
 "How many blank labels before printing the first one. It allows to reuse a "
 "labels page"
-msgstr "Nombre d'étiquettes blanches avant d'imprimer la première. Ceci vous permet de réutiliser des planches d'étiquettes entamées"
+msgstr ""
+"Nombre d'étiquettes blanches avant d'imprimer la première. Ceci vous permet "
+"de réutiliser des planches d'étiquettes entamées"
 
 #: Search/forms.py:720
 msgid "etiquettes 24"
@@ -4880,16 +4894,16 @@ msgstr "Lieu"
 msgid "Changes"
 msgstr "Modifications"
 
-#: config.py:121
+#: config.py:124
 msgid "Same as"
 msgstr "Même personne"
 
-#: config.py:128 templates/balafon/_bs_navigation.html:154
+#: config.py:131 templates/balafon/_bs_navigation.html:154
 #: templates/balafon/_navigation.html:45
 msgid "Admin"
 msgstr "Admin"
 
-#: config.py:139
+#: config.py:142
 msgid "Unit test"
 msgstr "Test unitaire"
 

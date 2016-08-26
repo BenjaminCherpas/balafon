@@ -116,6 +116,9 @@ SEARCH_FORMS = [
             emailing_search_forms.EmailingOpenedSearchForm,
             emailing_search_forms.EmailingSendToSearchForm,
             emailing_search_forms.EmailingBounceSearchForm,
+            emailing_search_forms.NewsletterSentSearchForm,
+            emailing_search_forms.NewsletterOpenedSearchForm,
+            emailing_search_forms.NewsletterReceivedSearchForm,
         ],
     ), (
         _(u'Same as'),

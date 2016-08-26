@@ -6,6 +6,7 @@ import json
 
 from django.core.urlresolvers import reverse
 
+from coop_cms.models import Newsletter
 from coop_cms.tests import BeautifulSoup
 from model_mommy import mommy
 
@@ -188,6 +189,148 @@ class EmailingSearchTest(BaseTestCase):
         self.assertNotContains(response, contact2.lastname)
         self.assertNotContains(response, contact3.lastname)
         self.assertNotContains(response, contact4.lastname)
+
+    def test_search_newsletter_sent_to(self):
+        """search contacts who received the newsletter"""
+
+        newsletter1 = mommy.make(Newsletter)
+        newsletter2 = mommy.make(Newsletter)
+
+        emailing1 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter1)
+        emailing2 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter1)
+        emailing3 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter2)
+
+        contact1 = self._new_contact("ABCD")
+        contact2 = self._new_contact("EFGH")
+        contact3 = self._new_contact("IJKL")
+        contact4 = self._new_contact("MNOP")
+        contact5 = self._new_contact("QRTS")
+        contact6 = self._new_contact("UVWX")
+
+        emailing1.sent_to.add(contact1)
+        emailing1.sent_to.add(contact2)
+        emailing1.send_to.add(contact3)
+        emailing1.save()
+
+        emailing2.sent_to.add(contact4)
+        emailing2.save()
+
+        emailing3.sent_to.add(contact5)
+        emailing3.save()
+
+        url = reverse('search')
+
+        data = {"gr0-_-newsletter_sent-_-0": newsletter1.id}
+
+        response = self.client.post(url, data=data)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], get_form_errors(response))
+
+        self.assertContains(response, contact1.lastname)
+        self.assertContains(response, contact2.lastname)
+        self.assertNotContains(response, contact3.lastname)
+        self.assertContains(response, contact4.lastname)
+        self.assertNotContains(response, contact5.lastname)
+        self.assertNotContains(response, contact6.lastname)
+
+    def test_search_newsletter_no_emailing(self):
+        """search no error if no emailing associated with the newsletter"""
+
+        newsletter1 = mommy.make(Newsletter)
+
+        url = reverse('search')
+
+        data = {"gr0-_-newsletter_sent-_-0": newsletter1.id}
+
+        response = self.client.post(url, data=data)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], get_form_errors(response))
+
+    def test_search_newsletter_recipients(self):
+        """search contacts who received the newsletter"""
+
+        newsletter1 = mommy.make(Newsletter)
+        newsletter2 = mommy.make(Newsletter)
+
+        emailing1 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter1)
+        emailing2 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter1)
+        emailing3 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter2)
+
+        contact1 = self._new_contact("ABCD")
+        contact2 = self._new_contact("EFGH")
+        contact3 = self._new_contact("IJKL")
+        contact4 = self._new_contact("MNOP")
+        contact5 = self._new_contact("QRTS")
+        contact6 = self._new_contact("UVWX")
+
+        emailing1.sent_to.add(contact1)
+        emailing1.sent_to.add(contact2)
+        emailing1.send_to.add(contact3)
+        emailing1.save()
+
+        emailing2.sent_to.add(contact4)
+        emailing2.save()
+
+        emailing3.sent_to.add(contact5)
+        emailing3.save()
+
+        url = reverse('search')
+
+        data = {"gr0-_-newsletter_recipient-_-0": newsletter1.id}
+
+        response = self.client.post(url, data=data)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], get_form_errors(response))
+
+        self.assertContains(response, contact1.lastname)
+        self.assertContains(response, contact2.lastname)
+        self.assertContains(response, contact3.lastname)
+        self.assertContains(response, contact4.lastname)
+        self.assertNotContains(response, contact5.lastname)
+        self.assertNotContains(response, contact6.lastname)
+
+    def test_search_newsletter_opened(self):
+        """search contacts who received the newsletter"""
+
+        newsletter1 = mommy.make(Newsletter)
+        newsletter2 = mommy.make(Newsletter)
+
+        emailing1 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter1)
+        emailing2 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter1)
+        emailing3 = mommy.make(Emailing, status=Emailing.STATUS_SENDING, newsletter=newsletter2)
+
+        contact1 = self._new_contact("ABCD")
+        contact2 = self._new_contact("EFGH")
+        contact3 = self._new_contact("IJKL")
+        contact4 = self._new_contact("MNOP")
+        contact5 = self._new_contact("QRTS")
+        contact6 = self._new_contact("UVWX")
+
+        emailing1.opened_emails.add(contact1)
+        emailing1.opened_emails.add(contact2)
+        emailing1.send_to.add(contact3)
+        emailing1.save()
+
+        emailing2.opened_emails.add(contact4)
+        emailing2.save()
+
+        emailing3.opened_emails.add(contact5)
+        emailing3.save()
+
+        url = reverse('search')
+
+        data = {"gr0-_-newsletter_opened-_-0": newsletter1.id}
+
+        response = self.client.post(url, data=data)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], get_form_errors(response))
+
+        self.assertContains(response, contact1.lastname)
+        self.assertContains(response, contact2.lastname)
+        self.assertNotContains(response, contact3.lastname)
+        self.assertContains(response, contact4.lastname)
+        self.assertNotContains(response, contact5.lastname)
+        self.assertNotContains(response, contact6.lastname)
 
     def test_search_opened(self):
         """search contacts who opened the emailing"""

@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
 import floppyforms as forms
+from coop_cms.models import Newsletter
 
 from balafon.Emailing import models
 from balafon.Search.forms import SearchFieldForm
@@ -44,7 +45,7 @@ class EmailingSentSearchForm(EmailingSearchForm):
         """get all contacts who received the emailing"""
         emailing = self._get_emailing()
         return {"emailing_received": emailing.id}
-        
+
 
 class EmailingOpenedSearchForm(EmailingSearchForm):
     """Emailing opened"""
@@ -96,3 +97,57 @@ class EmailingContactsSearchForm(EmailingSearchForm):
         """get all contacts for this emailing"""
         emailing = self._get_emailing()
         return Q(emailing_received=emailing.id) | Q(emailing_to_be_received=emailing.id)
+
+
+class NewsletterBaseSearchForm(SearchFieldForm):
+    def __init__(self, *args, **kwargs):
+        super(NewsletterBaseSearchForm, self).__init__(*args, **kwargs)
+
+        queryset = Newsletter.objects.all()
+        queryset = queryset.order_by("-created", "-id")
+
+        field = forms.ModelChoiceField(queryset, label=self.label, **kwargs)
+        self._add_field(field)
+
+    def _get_emailings(self):
+        """get list of emailings"""
+        return list(models.Emailing.objects.filter(newsletter=self.value))
+
+    def get_lookup(self):
+        """get all contacts who received the newsletter"""
+        emailings = self._get_emailings()
+        if not emailings:
+            return Q(id=0)
+        else:
+            q_objs = self.get_emailing_lookup(emailings[0])
+            for emailing in emailings[1:]:
+                q_objs |= self.get_emailing_lookup(emailing)
+            return q_objs
+
+
+class NewsletterSentSearchForm(NewsletterBaseSearchForm):
+    """Emailing sent to"""
+    name = 'newsletter_sent'
+    label = _(u'Newsletter sent')
+
+    def get_emailing_lookup(self, emailing):
+        return Q(emailing_received=emailing.id)
+
+
+class NewsletterOpenedSearchForm(NewsletterBaseSearchForm):
+    """Emailing sent to"""
+    name = 'newsletter_opened'
+    label = _(u'Newsletter opened')
+
+    def get_emailing_lookup(self, emailing):
+        return Q(emailing_opened=emailing.id)
+
+
+class NewsletterReceivedSearchForm(NewsletterBaseSearchForm):
+    """Emailing sent to"""
+    name = 'newsletter_recipient'
+    label = _(u'Newsletter recipient')
+
+    def get_emailing_lookup(self, emailing):
+        return Q(emailing_received=emailing.id) | Q(emailing_to_be_received=emailing.id)
+
