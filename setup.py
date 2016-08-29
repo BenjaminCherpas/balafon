@@ -35,6 +35,9 @@ setup(
         'django-tastypie',
         'django-cors-headers',
     ],
+    dependency_links=[
+        'git+https://github.com/ljean/coop_cms.git@e4ae9d628942950abfaee289d9696cd5253578cd#egg=apidev_coop_cms',
+    ],
     long_description=open('README.rst').read(),
     url='https://github.com/ljean/balafon',
     classifiers=[
