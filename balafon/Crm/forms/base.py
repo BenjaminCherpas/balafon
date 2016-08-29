@@ -188,7 +188,7 @@ class _CityBasedForm(object):
                 return city
             except ValidationError:
                 raise
-            except Exception, msg:
+            except Exception as msg:
                 raise ValidationError(msg)
 
     def clean_city(self):

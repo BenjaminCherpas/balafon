@@ -119,7 +119,7 @@ class MenuActionUrlNode(template.Node):
             obj, attr = self.action_id_var.split('.')
             action_id = getattr(context[obj], attr)
 
-        except (ValueError, KeyError, AttributeError), exc:
+        except (ValueError, KeyError, AttributeError) as exc:
             logger.error('MenuActionUrl: {0}', exc)
             return ''
 

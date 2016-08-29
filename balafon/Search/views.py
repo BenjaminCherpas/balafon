@@ -247,7 +247,7 @@ def get_field(request, name):
         return HttpResponse(json.dumps({'form': the_template.render(the_context)}), content_type="application/json")
     except KeyError:
         raise Http404
-    except Exception as msg:
+    except Exception:
         logger.exception("get_field")
         raise
 
@@ -353,7 +353,7 @@ def create_emailing(request):
                         'Search/new_emailing.html',
                         {'form': form}
                     )
-    except Exception, msg:
+    except Exception:
         logger.exception("create_emailing")
         raise
     raise Http404
@@ -531,7 +531,7 @@ def add_contacts_to_group(request):
                                 'message': _(u'The search results contains no contacts')
                             }
                         )
-    except Exception, msg:
+    except Exception:
         logger.exception("add_contacts_to_group")
         raise
     raise Http404
@@ -590,7 +590,7 @@ def contacts_admin(request):
                                 'message': _(u'The search results contains no contacts')
                             }
                         )
-    except Exception, msg:
+    except Exception:
         logger.exception("contacts_admin")
         raise
     raise Http404
@@ -646,7 +646,7 @@ def export_to_pdf(request):
                         'Search/export_to_pdf.html',
                         {'form': form}
                     )
-    except Exception, msg:
+    except Exception:
         logger.exception("export_to_pdf")
         raise
     raise Http404
@@ -704,7 +704,7 @@ def print_labels_pdf(request):
                         'Search/print_labels_pdf.html',
                         {'form': form}
                     )
-    except Exception, msg:
+    except Exception:
         logger.exception("print_labels_pdf")
         raise
     raise Http404

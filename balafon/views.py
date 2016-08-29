@@ -45,6 +45,6 @@ def auto_save_data(request, model_type, field_name, obj_id):
         obj.save()   
     except Http404:
         raise
-    except Exception, msg:
+    except Exception as msg:
         return HttpResponse(json.dumps({"ok": False, "error": unicode(msg)}), content_type='application/json')
     return HttpResponse(json.dumps({"ok": True}), content_type='application/json')

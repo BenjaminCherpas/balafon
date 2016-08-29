@@ -558,7 +558,7 @@ def confirm_contacts_import(request, import_id):
             request,
             _(u"An error occurred while reading the csv file. You should check that the file encoding is correct.")
         )
-    except Exception, msg:  # pylint: disable broad-except
+    except Exception as msg:  # pylint: disable broad-except
         error(
             request,
             u'{0}: {1}'.format(

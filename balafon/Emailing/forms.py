@@ -181,7 +181,7 @@ class NewNewsletterForm(BsForm):
                             content = post_processor_func(content)
                         self.source_content = content
                         return url
-                    except Exception, msg:
+                    except Exception as msg:
                         raise ValidationError(msg)
             raise ValidationError(ugettext(u"The url is not allowed"))
         return u''

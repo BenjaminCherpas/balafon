@@ -53,7 +53,7 @@ def get_french_cities(source):
         for json_data in results:
             data.append(dict([(k, v["value"]) for (k, v) in json_data.items()]))    
         return data
-    except SPARQLExceptions.QueryBadFormed, msg:
+    except SPARQLExceptions.QueryBadFormed as msg:
         print "Error: ", msg
 
 def dump_xls(cities_list):

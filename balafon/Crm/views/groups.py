@@ -14,7 +14,7 @@ from coop_cms.utils import paginate
 
 from balafon.Crm import models, forms
 from balafon.permissions import can_access
-from balafon.utils import log_error
+from balafon.utils import log_error, logger
 
 
 @user_passes_test(can_access)
@@ -80,8 +80,8 @@ def add_contact_to_group(request, contact_id):
         )
 
     # pylint: disable=broad-except
-    except Exception, msg:
-        print "#ERR", msg
+    except Exception as msg:
+        logger.error(unicode(msg))
         raise
 
 
@@ -97,8 +97,8 @@ def get_group_suggest_list(request):
         return HttpResponse(json.dumps(suggestions), content_type='application/json')
 
     # pylint: disable=broad-except
-    except Exception, msg:
-        print '###', msg
+    except Exception as msg:
+        logger.error(unicode(msg))
 
 
 @user_passes_test(can_access)
@@ -152,8 +152,8 @@ def remove_contact_from_group(request, group_id, contact_id):
         )
 
     # pylint: disable=broad-except
-    except Exception, msg:
-        print "#ERR", msg
+    except Exception as msg:
+        logger.error(unicode(msg))
         raise
 
 
@@ -393,5 +393,5 @@ def get_contact_or_entity(request):
         return HttpResponse(json.dumps(suggestions), content_type='application/json')
 
     # pylint: disable=broad-except
-    except Exception, msg:
-        print '###', msg
+    except Exception as msg:
+        logger.error(unicode(msg))

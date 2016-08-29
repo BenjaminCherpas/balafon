@@ -91,9 +91,12 @@ def post_message(request):
                     email.send()
                     messages.add_message(request, messages.SUCCESS,
                         _(u"The message have been sent"))
-                except Exception, msg:
-                    messages.add_message(request, messages.ERROR,
-                        _(u"The message couldn't be send."))
+                except Exception as msg:
+                    messages.add_message(
+                        request,
+                        messages.ERROR,
+                        _(u"The message couldn't be send.")
+                    )
                     
             #add an action
             message_action, _is_new = ActionType.objects.get_or_create(name=_(u'Message'))

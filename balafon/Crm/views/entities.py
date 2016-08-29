@@ -164,7 +164,7 @@ def change_contact_entity(request, contact_id):
             'Crm/change_contact_entity.html',
             context_dict
         )
-    except Exception, msg:
+    except Exception as msg:
         print "#ERR", msg
         raise
 
