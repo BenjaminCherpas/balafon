@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """test we can search contacts by action"""
 
+from unittest import skipIf
+
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 
@@ -80,6 +83,7 @@ class PrintLabelsPdfTest(BaseTestCase):
         login_url = reverse('django.contrib.auth.views.login')[3:]
         self.assertTrue(response['Location'].find(login_url) >= 0)
 
+    @skipIf(getattr(settings, 'SKIP_PDF_UNITTESTS', False))
     def test_post_print_labels_pdf(self):
         """test create actions for contact"""
         entity1 = mommy.make(models.Entity, name=u"My tiny corp")
@@ -107,6 +111,7 @@ class PrintLabelsPdfTest(BaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(response['Content-Type'], 'application/pdf')
 
+    @skipIf(getattr(settings, 'SKIP_PDF_UNITTESTS', False))
     def test_post_print_labels_pdf_start_at(self):
         """test create actions for contact"""
         entity1 = mommy.make(models.Entity, name=u"My tiny corp")
