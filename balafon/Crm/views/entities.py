@@ -2,22 +2,14 @@
 """view and edit entities"""
 
 from datetime import date
-import hashlib
 import json
-import os
 import re
-import urllib
-import urllib2
 
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.messages import warning
-from django.core.files import File
-from django.core.files.temp import NamedTemporaryFile
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django import template
-from django.utils.safestring import mark_safe
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext as _
 
