@@ -18,7 +18,7 @@ except ImportError:
     from registration.backends.model_activation.views import RegistrationView, ActivationView
 
 from balafon.Crm.models import Action, ActionType
-from balafon.Profile.forms import MessageForm, UserRegistrationForm
+from balafon.Profile.forms import MessageForm
 from balafon.Profile.models import ContactProfile
 from balafon.Profile.utils import create_profile_contact, notify_registration
 from balafon.settings import get_profile_form, get_registration_form
@@ -100,7 +100,7 @@ def post_message(request):
                     
             # add an action
             message_action, _is_new = ActionType.objects.get_or_create(name=_(u'Message'))
-            action = Action.objects.create(
+            Action.objects.create(
                 subject=_(u"New message on web site"), planned_date=now_rounded(),
                 type=message_action, detail=message, contact=profile.contact, display_on_board=True
             )
