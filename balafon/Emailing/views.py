@@ -15,8 +15,8 @@ else:
 from django.core.urlresolvers import reverse
 from django.views.generic.edit import UpdateView
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext, Context
+from django.shortcuts import render, get_object_or_404
+from django.template import Context
 from django.template.loader import get_template
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
@@ -43,13 +43,13 @@ def newsletter_list(request):
     """display list of newsletters"""
     newsletters = Newsletter.objects.all().order_by('-id')
     page_obj = paginate(request, newsletters, 10)
-    return render_to_response(
+    return render(
+        request,
         'Emailing/newsletter_list.html',
         {
             'newsletters': list(page_obj),
             'page_obj': page_obj
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -69,15 +69,15 @@ def delete_emailing(request, emailing_id):
     else:
         form = ConfirmForm()
 
-    return render_to_response(
+    return render(
+        request,
         'balafon/confirmation_dialog.html',
         {
             'form': form,
             'message': _(u"Are you sure to delete '{0.newsletter.subject}' {1}?").format(
                 emailing, emailing.get_status_display()),
             'action_url': reverse("emailing_delete", args=[emailing_id]),
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -87,10 +87,10 @@ def view_emailing(request, emailing_id):
 
     emailing = get_object_or_404(models.Emailing, id=emailing_id)
 
-    return render_to_response(
+    return render(
+        request,
         'Emailing/view_emailing.html',
-        {'emailing': emailing, 'contacts': emailing.get_contacts()},
-        context_instance=RequestContext(request)
+        {'emailing': emailing, 'contacts': emailing.get_contacts()}
     )
 
 
@@ -122,13 +122,13 @@ def new_newsletter(request):
         else:
             form = forms.NewNewsletterForm()
     
-        return render_to_response(
+        return render(
+            request,
             'Emailing/new_newsletter.html',
-            {'form': form},
-            context_instance=RequestContext(request)
+            {'form': form}
         )
     except Exception as msg:
-        print "#ERR", msg
+        logger.error(unicode(msg))
         raise
 
 
@@ -151,14 +151,14 @@ def confirm_send_mail(request, emailing_id):
     else:
         form = forms.NewsletterSchedulingForm(instance=emailing)
     
-    return render_to_response(
+    return render(
+        request,
         'Emailing/confirm_send_mail.html',
         {
             'form': form,
             'message': _(u'Is this newsletter ready to be sent?'),
             'action_url': reverse("emailing_confirm_send_mail", args=[emailing_id]),
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -184,14 +184,14 @@ def cancel_send_mail(request, emailing_id):
     else:
         form = ConfirmForm()
         
-    return render_to_response(
+    return render(
+        request,
         'balafon/confirmation_dialog.html',
         {
             'form': form,
             'message': _(u'Cancel the sending?'),
             'action_url': reverse("emailing_cancel_send_mail", args=[emailing_id]),
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -254,7 +254,8 @@ def unregister_contact(request, emailing_id, contact_uuid):
                     emailing.unsub.add(contact)
                     emailing.save()
 
-                return render_to_response(
+                return render(
+                    request,
                     'Emailing/public/unregister_done.html',
                     {
                         'contact': contact,
@@ -262,34 +263,33 @@ def unregister_contact(request, emailing_id, contact_uuid):
                         'form': form,
                         'my_company': my_company,
                         'unregister': True,
-                    },
-                    context_instance=RequestContext(request)
+                    }
                 )
             else:
                 pass #not valid : display with errors
         
         else:
-            return render_to_response(
+            return render(
+                request,
                 'Emailing/public/unregister_done.html',
                 {
                     'contact': contact,
                     'emailing': emailing,
                     'my_company': my_company
-                },
-                context_instance=RequestContext(request)
+                }
             )
     else:
         form = forms.UnregisterForm()
 
-    return render_to_response(
+    return render(
+        request,
         'Emailing/public/unregister_confirm.html',
         {
             'contact': contact,
             'emailing': emailing,
             'form': form,
             'my_company': my_company
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -321,13 +321,13 @@ def subscribe_done(request, contact_uuid):
     else:
         my_company = settings.BALAFON_MY_COMPANY
     
-    return render_to_response(
+    return render(
+        request,
         'Emailing/public/subscribe_done.html',
         {
             'contact': contact,
             'my_company': my_company,
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -340,13 +340,13 @@ def subscribe_error(request, contact_uuid):
     if subscription_type_names:
         my_company = u', '.join(subscription_type_names)
     
-    return render_to_response(
+    return render(
+        request,
         'Emailing/public/subscribe_error.html',
         {
             'contact': contact,
             'my_company': my_company,
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -364,13 +364,13 @@ def email_verification(request, contact_uuid):
     contact.email_verified = True
     contact.save()
     
-    return render_to_response(
+    return render(
+        request,
         'Emailing/public/verification_done.html',
         {
             'contact': contact,
             'my_company': my_company,
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -424,10 +424,10 @@ class SubscribeView(View):
             'form': form,
         }
             
-        return render_to_response(
+        return render(
+            self.request,
             self.get_template(),
-            context_dict,
-            context_instance=RequestContext(self.request)
+            context_dict
         )
 
     def get(self, request, *args, **kwargs):

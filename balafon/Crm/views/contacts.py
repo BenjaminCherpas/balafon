@@ -7,8 +7,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404, render
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext as _
 
 from colorbox.decorators import popup_redirect
@@ -106,15 +105,15 @@ def edit_contact(request, contact_id, mini=True, go_to_entity=False):
     else:
         form = forms.ContactForm(instance=contact)
 
-    return render_to_response(
+    return render(
+        request,
         'Crm/edit_contact.html',
         {
             'form': form,
             'contact': contact,
             'entity': entity,
             'go_to_entity': go_to_entity,
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -139,7 +138,8 @@ def view_contact(request, contact_id):
             same_as=contact.same_as
         ).exclude(id=contact.id).order_by('same_as_priority')
 
-    return render_to_response(
+    return render(
+        request,
         'Crm/view_contact.html',
         {
             'contact': contact,
@@ -148,8 +148,7 @@ def view_contact(request, contact_id):
             'entity': contact.entity,
             'preview': preview,
             'template_base': "balafon/bs_base.html" if not preview else "balafon/bs_base_raw.html"
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -176,13 +175,13 @@ def add_contact(request, entity_id):
     else:
         contact_form = forms.ContactForm(instance=contact)
 
-    return render_to_response(
+    return render(
+        request,
         'Crm/edit_contact.html',
         {
             "entity": entity,
             "form": contact_form,
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -224,14 +223,14 @@ def add_single_contact(request):
         contact = None
         contact_form = forms.ContactForm()
 
-    return render_to_response(
+    return render(
+        request,
         'Crm/edit_contact.html',
         {
             'contact': contact,
             'form': contact_form,
             'is_single_contact': True,
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -258,14 +257,14 @@ def delete_contact(request, contact_id):
     else:
         form = forms.ConfirmForm()
 
-    return render_to_response(
+    return render(
+        request,
         'balafon/confirmation_dialog.html',
         {
             'form': form,
             'message': _(u'Are you sure to delete the contact "{0}"?').format(contact),
             'action_url': reverse("crm_delete_contact", args=[contact_id]),
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -287,10 +286,10 @@ def select_contact_and_redirect(request, view_name, template_name, choices=None)
 
     post_url = reverse("crm_add_action")+url_args
 
-    return render_to_response(
+    return render(
+        request,
         template_name,
-        {'form': form, 'post_url': post_url},
-        context_instance=RequestContext(request)
+        {'form': form, 'post_url': post_url}
     )
 
 

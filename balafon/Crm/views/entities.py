@@ -16,10 +16,9 @@ from django.core.files.temp import NamedTemporaryFile
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404, render
-from django.template import RequestContext
 from django import template
 from django.utils.safestring import mark_safe
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext as _
 
 from coop_cms.utils import paginate
@@ -98,10 +97,10 @@ def view_entity(request, entity_id):
         'template_base': "balafon/bs_base.html" if not preview else "balafon/bs_base_raw.html"
     }
 
-    return render_to_response(
+    return render(
+        request,
         'Crm/entity.html',
-        context,
-        context_instance=RequestContext(request)
+        context
     )
 
 
@@ -128,14 +127,14 @@ def view_entities_list(request):
 
     entities = list(page_obj)
 
-    return render_to_response(
+    return render(
+        request,
         'Crm/all_entities.html',
         {
             'entities': entities,
             'letter_filter': letter_filter,
             'page_obj': page_obj,
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -160,10 +159,10 @@ def change_contact_entity(request, contact_id):
             'form': form,
         }
 
-        return render_to_response(
+        return render(
+            request,
             'Crm/change_contact_entity.html',
-            context_dict,
-            context_instance=RequestContext(request)
+            context_dict
         )
     except Exception, msg:
         print "#ERR", msg
@@ -186,10 +185,10 @@ def edit_entity(request, entity_id):
     else:
         form = forms.EntityForm(instance=entity)
 
-    return render_to_response(
+    return render(
+        request,
         'Crm/edit_entity.html',
-        locals(),
-        context_instance=RequestContext(request)
+        locals()
     )
 
 
@@ -215,15 +214,15 @@ def create_entity(request, entity_type_id):
     else:
         form = forms.EntityForm(instance=entity, initial={'relationship_date': date.today()})
 
-    return render_to_response(
+    return render(
+        request,
         'Crm/edit_entity.html',
         {
             'entity': entity,
             'form': form,
             'create_entity': True,
             'entity_type_id': entity_type_id,
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -242,14 +241,14 @@ def delete_entity(request, entity_id):
                 return HttpResponseRedirect(reverse('crm_edit_entity', args=[entity.id]))
     else:
         form = forms.ConfirmForm()
-    return render_to_response(
+    return render(
+        request,
         'balafon/confirmation_dialog.html',
         {
             'form': form,
             'message': _(u'Are you sure to delete {0.name}?').format(entity),
             'action_url': reverse("crm_delete_entity", args=[entity_id]),
-        },
-        context_instance=RequestContext(request)
+        }
     )
 
 
@@ -266,10 +265,10 @@ def select_entity_and_redirect(request, view_name, template_name):
     else:
         form = forms.SelectEntityForm()
 
-    return render_to_response(
+    return render(
+        request,
         template_name,
-        {'form': form},
-        context_instance=RequestContext(request)
+        {'form': form}
     )
 
 
