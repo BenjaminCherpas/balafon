@@ -69,8 +69,3 @@ def dump_xls(cities_list):
 if __name__ == "__main__":
     cities_list = get_french_cities("http://fr.dbpedia.org/sparql")
     dump_xls(cities_list)
-    #for d in cities_list:
-    #    print "*********************************"
-    #    for k in d:
-    #        print k, d[k].encode('unicode_escape')
-    ##print get_french_cities("http://fr.dbpedia.org/sparql")#.encode('unicode_escape')

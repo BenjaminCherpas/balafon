@@ -98,7 +98,7 @@ def post_message(request):
                         _(u"The message couldn't be send.")
                     )
                     
-            #add an action
+            # add an action
             message_action, _is_new = ActionType.objects.get_or_create(name=_(u'Message'))
             action = Action.objects.create(
                 subject=_(u"New message on web site"), planned_date=now_rounded(),
@@ -173,7 +173,7 @@ class AcceptNewsletterActivationView(ActivationView):
 
     def activate(self, request, *args, **kwargs):
         activated_user = super(AcceptNewsletterActivationView, self).activate(request, *args, **kwargs)
-        #The account has been activated: We can create the corresponding contact in Balafon
+        # The account has been activated: We can create the corresponding contact in Balafon
         if activated_user:
             profile = create_profile_contact(activated_user)
             notify_registration(profile)

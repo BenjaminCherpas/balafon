@@ -134,4 +134,3 @@ def make_homepage(request):
             data["message"] = u", ".join([unicode(error_list) for error_list in form.errors.values()])
         return HttpResponse(json.dumps(data), content_type="application/json")
     raise Http404
-

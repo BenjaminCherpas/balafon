@@ -599,7 +599,7 @@ class GroupSearchForm(SearchFieldForm):
         queryset = models.Group.objects.all()
         try:
             queryset = queryset.extra(select={'lower_name': 'lower(name)'}).order_by('lower_name')
-        except Exception: #pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             queryset = queryset.order_by('name')
         kwargs = {}
         widget = self._get_widget()
@@ -636,7 +636,7 @@ class MultiGroupSearchForm(SearchFieldForm):
         queryset = models.Group.objects.all()
         try:
             queryset = queryset.extra(select={'lower_name': 'lower(name)'}).order_by('lower_name')
-        except Exception: #pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             queryset = queryset.order_by('name')
         kwargs = kwargs or {}
         kwargs.setdefault('required', True)
@@ -717,7 +717,7 @@ class NotInGroupSearchForm(SearchFieldForm):
         queryset = models.Group.objects.all()
         try:
             queryset = queryset.extra(select={'lower_name': 'lower(name)'}).order_by('lower_name')
-        except Exception: #pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             queryset = queryset.order_by('name')
         field = forms.ModelChoiceField(
             queryset,

@@ -90,7 +90,7 @@ def get_group_suggest_list(request):
     """view"""
     try:
         suggestions = []
-        #the 1st chars entered in the autocomplete
+        # the 1st chars entered in the autocomplete
         term = request.GET["term"]
         for group in models.Group.objects.filter(name__icontains=term):
             suggestions.append(group.name)
@@ -274,7 +274,7 @@ def see_my_groups(request):
         # pylint: disable=broad-except
         except Exception:
             groups = list(models.Group.objects.all())
-            #order groups with case-independant name
+            # order groups with case-independant name
             groups.sort(key=lambda group: group.name.lower())
     else:
         groups = groups.order_by('-modified')
@@ -363,7 +363,7 @@ def get_contact_or_entity(request):
     """view"""
     try:
         suggestions = []
-        #the 1st chars entered in the autocomplete
+        # the 1st chars entered in the autocomplete
         term = request.GET.get("term", '')
 
         if len(term):
