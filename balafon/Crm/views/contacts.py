@@ -34,7 +34,7 @@ def get_contacts_from_term(term):
 
     contacts = []
     contact_set = set()
-    for i, term in enumerate(terms):
+    for idx, term in enumerate(terms):
         matching_contacts = list(models.Contact.objects.filter(
             Q(firstname__icontains=term) |
             Q(lastname__icontains=term) |
@@ -43,7 +43,7 @@ def get_contacts_from_term(term):
         if not matching_contacts:
             contact_set = set()
             break
-        if i == 0:
+        if idx == 0:
             contact_set = set(matching_contacts)
         else:
             contact_set = contact_set.intersection(matching_contacts)
