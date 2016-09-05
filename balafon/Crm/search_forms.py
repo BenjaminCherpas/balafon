@@ -1499,7 +1499,9 @@ class DistrictSearchForm(BaseCitySearchForm):
         field = forms.ModelChoiceField(
             queryset,
             label=self.label,
-            widget=CityNoCountryAutoComplete(attrs={'placeholder': _(u'Enter a city of the wanted district'), 'size': '80'})
+            widget=CityNoCountryAutoComplete(
+                attrs={'placeholder': _(u'Enter a city of the wanted district'), 'size': '80'}
+            )
         )
         self._add_field(field)
 
@@ -1534,7 +1536,8 @@ class Geographic50SearchForm(BaseCitySearchForm):
         lonmax = lon + 50 * 0.01
         lonmin = lon - 50 * 0.01
         return ((Q(entity__city__latitude__lt=latmax) & Q(entity__city__latitude__gt=latmin) & Q(entity__city__longitude__lt=lonmax) & Q(entity__city__longitude__gt=lonmin)) | (Q(city__latitude__lt=latmax) & Q(city__latitude__gt=latmin) & Q(city__longitude__lt=lonmax) & Q(city__longitude__gt=lonmin)))
-    
+
+
 class Geographic25SearchForm(BaseCitySearchForm):
     """within 25 kilometers"""
     name = 'geographic25'
@@ -1555,11 +1558,22 @@ class Geographic25SearchForm(BaseCitySearchForm):
         city = models.City.objects.get(id=self.value)
         lat = city.latitude
         lon = city.longitude
-        latmax = lat + (25/1.112) * 0.01
-        latmin = lat - (25/1.112) * 0.01
-        lonmax = lon + 25 * 0.01
-        lonmin = lon - 25 * 0.01
-        return ((Q(entity__city__latitude__lt=latmax) & Q(entity__city__latitude__gt=latmin) & Q(entity__city__longitude__lt=lonmax) & Q(entity__city__longitude__gt=lonmin)) | (Q(city__latitude__lt=latmax) & Q(city__latitude__gt=latmin) & Q(city__longitude__lt=lonmax) & Q(city__longitude__gt=lonmin)))    
+        lat_max = lat + (25/1.112) * 0.01
+        lat_min = lat - (25/1.112) * 0.01
+        lon_max = lon + 25 * 0.01
+        lon_min = lon - 25 * 0.01
+        return (
+            Q(entity__city__latitude__lt=lat_max) &
+            Q(entity__city__latitude__gt=lat_min) &
+            Q(entity__city__longitude__lt=lon_max) &
+            Q(entity__city__longitude__gt=lon_min)
+        ) | (
+            Q(city__latitude__lt=lat_max) &
+            Q(city__latitude__gt=lat_min) &
+            Q(city__longitude__lt=lon_max) &
+            Q(city__longitude__gt=lon_min)
+        )
+
 
 class Geographic100SearchForm(BaseCitySearchForm):
     """within 100 kilometers"""
@@ -1581,11 +1595,21 @@ class Geographic100SearchForm(BaseCitySearchForm):
         city = models.City.objects.get(id=self.value)
         lat = city.latitude
         lon = city.longitude
-        latmax = lat + (100/1.112) * 0.01
-        latmin = lat - (100/1.112) * 0.01
-        lonmax = lon + 100 * 0.01
-        lonmin = lon - 100 * 0.01
-        return ((Q(entity__city__latitude__lt=latmax) & Q(entity__city__latitude__gt=latmin) & Q(entity__city__longitude__lt=lonmax) & Q(entity__city__longitude__gt=lonmin)) | (Q(city__latitude__lt=latmax) & Q(city__latitude__gt=latmin) & Q(city__longitude__lt=lonmax) & Q(city__longitude__gt=lonmin)))
+        lat_max = lat + (100/1.112) * 0.01
+        lat_min = lat - (100/1.112) * 0.01
+        lon_max = lon + 100 * 0.01
+        lon_min = lon - 100 * 0.01
+        return (
+            Q(entity__city__latitude__lt=lat_max) &
+            Q(entity__city__latitude__gt=lat_min) &
+            Q(entity__city__longitude__lt=lon_max) &
+            Q(entity__city__longitude__gt=lon_min)
+        ) | (
+            Q(city__latitude__lt=lat_max) &
+            Q(city__latitude__gt=lat_min) &
+            Q(city__longitude__lt=lon_max) &
+            Q(city__longitude__gt=lon_min)
+        )
 
 
 class GeonamesValidForm(YesNoSearchFieldForm):
@@ -1599,7 +1623,8 @@ class GeonamesValidForm(YesNoSearchFieldForm):
             return Q(entity__city__geonames_valid=False)
         else:
             return Q(entity__city__geonames_valid=True)
-        
+
+
 class ExistPictureForm(YesNoSearchFieldForm):
     """by existing picture"""
     name = 'exist_picture'
@@ -1608,6 +1633,6 @@ class ExistPictureForm(YesNoSearchFieldForm):
     def get_lookup(self):
         """lookup"""
         if not self.is_yes():
-            return (Q(photo="") & Q(photo_url=None))
+            return Q(photo="") & Q(photo_url=None)
         else:
-            return (~Q(photo="") | ~Q(photo_url=None))
+            return ~Q(photo="") | ~Q(photo_url=None)

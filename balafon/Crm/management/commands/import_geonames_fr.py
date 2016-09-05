@@ -52,7 +52,10 @@ def manage_spe_cases():
                     print("\t[" + str(i) + "] : " + temp[i])
             choice = -1
             while choice > count or choice < 0:
-                choice = int(raw_input("\nWrite the value of the corresponding name : "))
+                try:
+                    choice = int(raw_input("\nWrite the value of the corresponding name : "))
+                except ValueError:
+                    pass
             if choice > 0:
                 if len(temp) == 1:
                     spe_case.city.name = temp[choice-1]
@@ -166,7 +169,7 @@ def fill_db():
         
 def update_doubles():
     """Update contacts and entities and remove the cities appearing twice or more"""
-
+    # TODO : Est-ce qu'on est obligé de passer par cette suppression?
     cities = City.objects.filter(parent__parent__parent__name='France').order_by("name", "parent")
     prec = City(name="", parent=None)
     for c in cities:

@@ -80,23 +80,30 @@ def format_city_name(city_name):
 
 def resolve_city(city_name, zip_code):
     """get a city form a name and zip code"""
+    # TODO : A REVOIR
     city_name = format_city_name(city_name)
-    if models.City.objects.filter(name__icontains=city_name):
-        cities = models.City.objects.filter(name=city_name)
-        for c in cities:
-            if c.name == city_name:
-                return c
-    if models.City.objects.filter(zip_code__icontains=zip_code[:2]):
-        cities = models.City.objects.filter(zip_code__icontains=zip_code[:2])
-        cts = []
-        for c in cities:
-            cts.append(c.name)
-        results = difflib.get_close_matches(city_name, cts, cutoff=0.8)
+    if zip_code:
+        try:
+            parent = models.Zone.objects.get(type__type='department', code=zip_code[:2])
+        except models.Zone.DoesNotExist:
+            parent = None
+    else:
+        parent = None
+    cities = models.City.objects.filter(name__icontains=city_name, parent=parent)
+    if cities.count():
+        for city in cities:
+            if city.name == city_name:
+                return city
+        return cities[0]
+
+    departement_cities = models.City.objects.filter(parent=parent)
+    if cities.count():
+        possible_cities = [city.name for city in departement_cities]
+        results = difflib.get_close_matches(city_name, possible_cities, cutoff=0.8)
         if results:
-            return cities.get(name=results[0])
-    if models.Zone.objects.get(code=zip_code[:2]):
-        zone = models.Zone.objects.get(code=zip_code[:2])
-    return City(name=city_name, parent=zone)
+            return departement_cities.filter(name=results[0])[0]
+    # TODO: Pays Etrangers
+    return models.City.objects.create(name=city_name, parent=parent)
 
 
 def get_actions_by_set(actions_qs, max_nb=0, action_set_list=None):

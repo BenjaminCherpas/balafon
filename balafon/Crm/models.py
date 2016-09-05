@@ -179,7 +179,7 @@ class City(BaseZone):
     longitude = models.FloatField(null=True, verbose_name=_(u'longitude'))
     zip_code = models.CharField(max_length=20, blank=True, verbose_name=_(u'zip code'))
     geonames_valid = models.BooleanField(default=False, verbose_name=_(u'is geonames valid'))
-    country = models.CharField(max_length=50, blank=True, verbose_name=_(u'country'))
+    country = models.CharField(max_length=50, blank=True, verbose_name=_(u'country'))  # TODO: Clarify
     
     groups = models.ManyToManyField(
         Zone, blank=True, verbose_name=_(u'group'), related_name='city_groups_set'
@@ -499,9 +499,10 @@ class Entity(AddressModel):
 
     def add_to_group(self, group_name):
         """add to group"""
-        group = Group.objects.get_or_create(name=group_name)[0]
+        group, created = Group.objects.get_or_create(name=group_name)
         group.entities.add(self)
         group.save()
+        return group, created
 
     def get_custom_fields(self):
         """additional fields"""
@@ -1016,9 +1017,10 @@ class Contact(AddressModel):
 
     def add_to_group(self, group_name):
         """add to group"""
-        group = Group.objects.get_or_create(name=group_name)[0]
+        group, created = Group.objects.get_or_create(name=group_name)
         group.contacts.add(self)
         group.save()
+        return group, created
 
     def save(self, *args, **kwargs):
         """save"""
