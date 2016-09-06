@@ -6,6 +6,7 @@
   <div class="col-md-12">
     <div class="opportunity-title">
       <span class="glyphicon glyphicon-tag"></span> <h2 class="inline-block">{{opportunity.name}}</h2>
+      {% if opportunity.ended %}<span class="label label-warning">{%  trans "closed" %}</span>{% endif %}
     </div>
   </div>
 </div>
@@ -23,6 +24,7 @@
 </div>
 {% endblock %}
 
+{% block section_menu_name %}<span class="glyphicon glyphicon-pencil"></span> {% trans "Edit" %}{% endblock %}
 
 {% block section_buttons %}
   <li><a class="colorbox-form" href="{% url "crm_edit_opportunity" opportunity.id %}">{% trans "Edit" %}</a></li>

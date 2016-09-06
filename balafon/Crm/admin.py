@@ -47,7 +47,6 @@ class SameAsAdmin(admin.ModelAdmin):
 admin.site.register(models.SameAs, SameAsAdmin)
 
 admin.site.register(models.Language)
-admin.site.register(models.OpportunityType)
 admin.site.register(models.ActionMenu)
 
 
@@ -81,13 +80,6 @@ class ActionTypeAdmin(admin.ModelAdmin):
     list_editable = ['set', 'subscribe_form', 'last_number', 'number_auto_generated', 'hide_contacts_buttons',]
 
 admin.site.register(models.ActionType, ActionTypeAdmin)
-
-
-class OpportunityStatusAdmin(admin.ModelAdmin):
-    """custom admin view"""
-    list_display = ['name', 'ordering']
-
-admin.site.register(models.OpportunityStatus, OpportunityStatusAdmin)
 
 
 class SubscriptionInline(admin.TabularInline):
@@ -144,9 +136,9 @@ admin.site.register(models.Entity, EntityAdmin)
 
 class OpportunityAdmin(admin.ModelAdmin):
     """custom admin view"""
-    list_display = ['name', ]
+    list_display = ['name', 'ended', 'get_start_date', 'get_end_date', ]
     search_fields = ['name', ]
-    raw_id_admin = ('entity',)
+    list_filter = ['ended']
 
 admin.site.register(models.Opportunity, OpportunityAdmin)
 

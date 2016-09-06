@@ -236,7 +236,7 @@ class OpportunityTest(BaseTestCase):
     def test_view_opportunity(self):
         """view an opportunity"""
         entity1 = mommy.make(models.Entity, relationship_date='2012-01-30')
-        opp1 = mommy.make(models.Opportunity, name="OPP1", entity=entity1)
+        opp1 = mommy.make(models.Opportunity, name="OPP1")
         response = self.client.get(reverse('crm_view_opportunity', args=[opp1.id]))
         self.assertEqual(200, response.status_code)
         self.assertContains(response, opp1.name)
@@ -245,7 +245,7 @@ class OpportunityTest(BaseTestCase):
         """view opportunity with actions"""
         entity1 = mommy.make(models.Entity, name='ent1', relationship_date='2012-01-30')
         entity2 = mommy.make(models.Entity, name='ent2', relationship_date='2012-01-30')
-        opp1 = mommy.make(models.Opportunity, name='OPP1', entity=entity1)
+        opp1 = mommy.make(models.Opportunity, name='OPP1')
         act1 = mommy.make(models.Action, subject='ABC', opportunity=opp1)
         act1.entities.add(entity1)
         act1.save()
@@ -266,7 +266,7 @@ class OpportunityTest(BaseTestCase):
         """view opportunity contacts"""
         entity1 = mommy.make(models.Entity, relationship_date='2012-01-30')
         entity2 = mommy.make(models.Entity, relationship_date='2012-01-30')
-        opp1 = mommy.make(models.Opportunity, entity=entity1)
+        opp1 = mommy.make(models.Opportunity)
         contact1 = mommy.make(models.Contact, lastname='ABCCBA', entity=entity1)
         contact2 = mommy.make(models.Contact, lastname='DEFFED', entity=entity2)
         contact3 = mommy.make(models.Contact, lastname='GHIIGH', entity=entity1)

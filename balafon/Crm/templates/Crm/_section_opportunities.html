@@ -22,6 +22,7 @@
     <td>
       {% favorite_item object=o %}
       {{o.name}}
+      {% if o.ended %}<span class="label label-warning">{%  trans "closed" %}</span>{% endif %}
     </td>
     
     <td><span class="contenteditable description inline-block" rel="{% url "auto_save_data" "opportunity" "detail" o.id %}" contenteditable="true">

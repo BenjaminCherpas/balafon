@@ -1143,57 +1143,12 @@ class Group(TimeStampedModel):
         verbose_name_plural = _(u'groups')
 
 
-class OpportunityStatus(NamedElement):
-    """status for an opportynity"""
-    ordering = models.IntegerField(default=0)
-    
-    class Meta:
-        verbose_name = _(u'opportunity status')
-        verbose_name_plural = _(u'opportunity status')
-
-
-class OpportunityType(NamedElement):
-    """type for an opprtunity"""
-    class Meta:
-        verbose_name = _(u'opportunity type')
-        verbose_name_plural = _(u'opportunity types')
-
-
 class Opportunity(TimeStampedModel):
     """An opportunity is kind of project. It makes possible to group different actions"""
-    PROBABILITY_LOW = 1
-    PROBABILITY_MEDIUM = 2
-    PROBABILITY_HIGH = 3
-    PROBABILITY_CHOICES = (
-        (PROBABILITY_LOW, _(u'low')),
-        (PROBABILITY_MEDIUM, _(u'medium')),
-        (PROBABILITY_HIGH, _(u'high')),
-    )
-    
-    #TO BE REMOVED--
-    entity = models.ForeignKey(Entity, blank=True, null=True, default=None)
-    #---------------
-    name = models.CharField(_('name'), max_length=200)
-    status = models.ForeignKey(OpportunityStatus, default=None, blank=True, null=True)
-    type = models.ForeignKey(OpportunityType, blank=True, null=True, default=None)
-    detail = models.TextField(_('detail'), blank=True, default='')
-    #TO BE REMOVED---
-    probability = models.IntegerField(
-        _('probability'), default=PROBABILITY_MEDIUM, choices=PROBABILITY_CHOICES
-    )
-    amount = models.DecimalField(_(u'amount'), default=None, blank=True, null=True, max_digits=11, decimal_places=2)
-    #----------------
+
+    name = models.CharField(_(u'name'), max_length=200)
+    detail = models.TextField(_(u'detail'), blank=True, default='')
     ended = models.BooleanField(_(u'closed'), default=False, db_index=True)
-    #TO BE REMOVED---
-    start_date = models.DateField(_('starting date'), blank=True, null=True, default=None)
-    end_date = models.DateField(_('closing date'), blank=True, null=True, default=None)
-    #----------------
-    display_on_board = models.BooleanField(
-        verbose_name=_(u'display on board'),
-        default=settings.OPPORTUNITY_DISPLAY_ON_BOARD_DEFAULT,
-        db_index=True
-    )
-    
     favorites = GenericRelation(Favorite)
     
     def get_start_date(self):
@@ -1211,7 +1166,7 @@ class Opportunity(TimeStampedModel):
             return None
     
     def default_logo(self):
-        """dafult logo"""
+        """default logo"""
         logo = "img/folder.png"
         return u"{0}{1}".format(project_settings.STATIC_URL, logo)
     

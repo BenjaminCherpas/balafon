@@ -163,11 +163,6 @@ urlpatterns = [
         opportunities.delete_opportunity,
         name='crm_delete_opportunity'
     ),
-    url(
-        r'^opportunities/(?P<entity_id>\d+)/$',
-        opportunities.view_entity_opportunities,
-        name='crm_entity_opportunities'
-    ),
     url(r'^opportunities/$', opportunities.view_all_opportunities, name='crm_all_opportunities'),
     url(r'^opportunities-by/(?P<ordering>.+)/$', opportunities.view_all_opportunities, name='crm_all_opportunities_by'),
     url(r'^add-opportunity/$', opportunities.add_opportunity, name='crm_add_opportunity'),

@@ -36,7 +36,7 @@ def get_opportunities(request):
     """view"""
     term = request.GET.get('term')
     queryset = models.Opportunity.objects.filter(ended=False, name__icontains=term)
-    opportunities = [{'id': x.id, 'name': u'{0}'.format(x.name)} for x in queryset]
+    opportunities = [{'id': opportunity.id, 'name': u'{0}'.format(opportunity.name)} for opportunity in queryset]
     return HttpResponse(json.dumps(opportunities), 'application/json')
 
 
@@ -50,39 +50,16 @@ def get_opportunity_id(request):
 
 
 @user_passes_test(can_access)
-def view_entity_opportunities(request, entity_id):
-    """view"""
-    entity = get_object_or_404(models.Entity, id=entity_id)
-    opportunities = models.Opportunity.objects.filter(entity=entity)
-
-    request.session["redirect_url"] = reverse('crm_entity_opportunities', args=[entity_id])
-
-    return render(
-        request,
-        'Crm/entity_opportunities.html',
-        {
-            'entity': entity,
-            'opportunities': opportunities,
-            'all_opportunities': True,
-        }
-    )
-
-
-@user_passes_test(can_access)
 def view_all_opportunities(request, ordering=None):
     """view"""
     opportunities = models.Opportunity.objects.all()
     if not ordering:
         ordering = 'date'
     if ordering == 'name':
-        opportunities = opportunities.order_by('name')
-    elif ordering == 'status':
-        opportunities = opportunities.order_by('status__ordering', 'status')
-    elif ordering == 'type':
-        opportunities = opportunities.order_by('type')
+        opportunities = opportunities.order_by(['ended', 'name'])
     elif ordering == 'date':
         opportunities = list(opportunities)
-        opportunities.sort(key=lambda o: o.get_start_date() or datetime(1970, 1, 1))
+        opportunities.sort(key=lambda opp: (not opp.ended, opp.get_start_date() or datetime(1970, 1, 1)))
         opportunities.reverse()
 
     request.session["redirect_url"] = reverse('crm_all_opportunities')

@@ -1186,10 +1186,38 @@ class ActionTest(BaseTestCase):
     def test_view_add_action_from_opportunity(self):
         """view add action from opportunity"""
         opportunity = mommy.make(models.Opportunity)
+        opportunity2 = mommy.make(models.Opportunity)
         url = reverse('crm_create_action', args=[0, 0])+"?opportunity={0}".format(opportunity.id)
         response = self.client.get(url)
-        self.assertEqual(BeautifulSoup(response.content).select('#id_opportunity')[0]["value"], str(opportunity.id))
         self.assertEqual(response.status_code, 200)
+
+        soup = BeautifulSoup(response.content).select('#id_opportunity option')
+        self.assertEqual(3, len(soup))
+        self.assertTrue(unicode(soup).find(opportunity.name) >= 0)
+        self.assertTrue(unicode(soup).find(opportunity2.name) >= 0)
+
+        soup = BeautifulSoup(response.content).select('#id_opportunity option[selected=selected]')
+        self.assertEqual(len(soup), 1)
+        self.assertEqual(soup[0]["value"], str(opportunity.id))
+        self.assertEqual(models.Action.objects.count(), 0)
+
+    def test_view_add_action_not_from_opportunity(self):
+        """view add action not from opportunity"""
+        opportunity = mommy.make(models.Opportunity)
+        opportunity2 = mommy.make(models.Opportunity)
+        url = reverse('crm_create_action', args=[0, 0])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        soup = BeautifulSoup(response.content).select('#id_opportunity option')
+        self.assertEqual(3, len(soup))
+        self.assertTrue(unicode(soup).find(opportunity.name) >= 0)
+        self.assertTrue(unicode(soup).find(opportunity2.name) >= 0)
+
+        soup = BeautifulSoup(response.content).select('#id_opportunity option[selected=selected]')
+        self.assertEqual(len(soup), 1)
+        self.assertNotEqual(soup[0]["value"], str(opportunity.id))
+        self.assertNotEqual(soup[0]["value"], str(opportunity2.id))
         self.assertEqual(models.Action.objects.count(), 0)
 
     def test_add_action_from_opportunity(self):

@@ -57,12 +57,12 @@ class ActionForm(FormWithFieldsetMixin, BetterBsModelForm):
         super(ActionForm, self).__init__(*args, **kwargs)
         self.title = u""
 
-        #Force the type to be hidden
+        # Force the type to be hidden
         action_type = None
         action_type_name = ''
         is_amount_calculated = False
         if instance:
-            #If a type is already defined and belongs to a set
+            # If a type is already defined and belongs to a set
             if instance.type and instance.type.set:
                 action_type = instance.type
             if instance.type:
@@ -70,7 +70,7 @@ class ActionForm(FormWithFieldsetMixin, BetterBsModelForm):
                 action_type_name = instance.type.name
                 self.calculated_amount = instance.amount
         else:
-            #if initial value is provided (from url)
+            # if initial value is provided (from url)
             action_type = kwargs.get('initial', {}).get('type', None)
             if action_type:
                 is_amount_calculated = action_type.is_amount_calculated
@@ -102,7 +102,7 @@ class ActionForm(FormWithFieldsetMixin, BetterBsModelForm):
                 (status.id, status.name) for status in instance.type.allowed_status.all()
             ]
 
-        self.fields['opportunity'].widget = forms.HiddenInput()
+        self.fields['opportunity'].queryset = models.Opportunity.objects.filter(ended=False)
         self.fields['detail'].widget = forms.Textarea(attrs={'placeholder': _(u'enter details'), 'cols': '72'})
 
         self._init_dt_field("planned_date", "date", "time")
@@ -243,24 +243,15 @@ class OpportunityForm(FormWithFieldsetMixin, BetterBsModelForm):
     class Meta:
         """form from model"""
         model = models.Opportunity
-        fields = ('name', 'detail')
+        fields = ('name', 'detail', 'ended')
 
         fieldsets = [
-            ('name', {'fields': ['name', 'detail'], 'legend': _(u'Summary')}),
+            ('name', {'fields': ['name', 'detail', 'ended'], 'legend': _(u'Summary')}),
         ]
 
     def __init__(self, *args, **kwargs):
         super(OpportunityForm, self).__init__(*args, **kwargs)
         self.fields['detail'].widget = forms.Textarea(attrs={'placeholder': _(u'enter details'), 'cols':'72'})
-
-
-class OpportunityStatusForm(forms.ModelForm):
-    """opportunity status form"""
-
-    class Meta:
-        """form from model"""
-        model = models.OpportunityStatus
-        fields = ('name', 'ordering', )
 
 
 class SelectOpportunityForm(forms.Form):

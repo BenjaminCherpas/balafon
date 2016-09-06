@@ -153,7 +153,7 @@ def view_entity_actions(request, entity_id, set_id):
         title = _(u"Other kind of actions") if models.ActionSet.objects.count() else _(u"Actions")
 
     actions = models.Action.objects.filter(
-        Q(entity=entity) | Q(contact__entity=entity) | Q(opportunity__entity=entity), *filters
+        Q(entity=entity) | Q(contact__entity=entity), *filters
     ).order_by("planned_date", "priority")
     request.session["redirect_url"] = reverse('crm_entity_actions', args=[entity_id, set_id])
     page_obj = paginate(request, actions, 50)
