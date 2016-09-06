@@ -72,10 +72,15 @@
     
     {% block footer %}
     <footer>
-    </footer>
     <div class="row"><div class="col-md-12">
-        <div class="version pull-right">Balafon {{ BALAFON_VERSION }}</div>
+        <div class="version text-right">
+          &nbsp;<span class="glyphicon glyphicon-user"></span>
+          {{ user.email|default:user.username }}
+          &nbsp;&nbsp;
+          Balafon {{ BALAFON_VERSION }}&nbsp;
+        </div>
     </div></div>
+    </footer>
     {% endblock %}
 
   {% endblock %}
