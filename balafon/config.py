@@ -108,7 +108,9 @@ SEARCH_FORMS = [
             search_forms.HasAction,
             search_forms.OpportunitySearchForm,
             search_forms.OpportunityNameSearchForm,
-        ],
+            search_forms.get_action_of_type_by_date_forms,
+            search_forms.get_no_action_of_type_by_date_forms,
+        ]
     ), (
         _(u'Emailing'),
         [

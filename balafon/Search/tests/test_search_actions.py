@@ -1398,3 +1398,116 @@ class ActionSearchTest(BaseTestCase):
         self.assertNotContains(response, contact2.lastname)
         self.assertContains(response, contact3.lastname)
         self.assertNotContains(response, contact4.lastname)
+
+
+class SearchContactsWithActionsInDateTest(BaseTestCase):
+    """"""
+
+    def test_action_of_type_between(self):
+        """"""
+        contact1 = mommy.make(models.Contact, lastname=u"ABCDEF", main_contact=True, has_left=False)
+        contact2 = mommy.make(models.Contact, lastname=u"EFGHIJ", main_contact=True, has_left=False)
+        contact3 = mommy.make(models.Contact, lastname=u"KLMNOP", main_contact=True, has_left=False)
+
+        type1 = mommy.make(models.ActionType)
+        type2 = mommy.make(models.ActionType)
+
+        action1 = mommy.make(models.Action, type=type1, planned_date=datetime(2016, 6, 21))
+        action1.contacts.add(contact1)
+        action1.save()
+
+        action2 = mommy.make(models.Action, type=type1, planned_date=datetime(2016, 1, 1))
+        action2.contacts.add(contact2)
+        action2.save()
+
+        action3 = mommy.make(models.Action, type=type2, planned_date=datetime(2016, 6, 21))
+        action3.contacts.add(contact3)
+        action3.save()
+
+        data = {
+            "gr0-_-action_{0}_by_date-_-0".format(type1.name_slug()): u"15/06/2016 22/06/2016",
+        }
+
+        response = self.client.post(reverse('search'), data=data)
+        self.assertEqual(200, response.status_code)
+
+        soup = BeautifulSoup(response.content)
+        self.assertEqual([], list(soup.select(".field-error")))
+
+        self.assertContains(response, contact1.lastname)
+        self.assertNotContains(response, contact2.lastname)
+        self.assertNotContains(response, contact3.lastname)
+
+    def test_no_action_of_type_between(self):
+        """"""
+        contact1 = mommy.make(models.Contact, lastname=u"ABCDEF", main_contact=True, has_left=False)
+        contact2 = mommy.make(models.Contact, lastname=u"EFGHIJ", main_contact=True, has_left=False)
+        contact3 = mommy.make(models.Contact, lastname=u"KLMNOP", main_contact=True, has_left=False)
+
+        type1 = mommy.make(models.ActionType)
+        type2 = mommy.make(models.ActionType)
+
+        action1 = mommy.make(models.Action, type=type1, planned_date=datetime(2016, 6, 21))
+        action1.contacts.add(contact1)
+        action1.save()
+
+        action2 = mommy.make(models.Action, type=type1, planned_date=datetime(2016, 1, 1))
+        action2.contacts.add(contact2)
+        action2.save()
+
+        action3 = mommy.make(models.Action, type=type2, planned_date=datetime(2016, 1, 1))
+        action3.contacts.add(contact3)
+        action3.save()
+
+        data = {
+            "gr0-_-no_action_{0}_by_date-_-0".format(type1.name_slug()): u"15/06/2016 22/06/2016",
+        }
+
+        response = self.client.post(reverse('search'), data=data)
+        self.assertEqual(200, response.status_code)
+
+        soup = BeautifulSoup(response.content)
+        self.assertEqual([], list(soup.select(".field-error")))
+
+        self.assertNotContains(response, contact1.lastname)
+        self.assertContains(response, contact2.lastname)
+        self.assertNotContains(response, contact3.lastname)
+
+    def test_renew_action_of_type_between(self):
+        """"""
+        contact1 = mommy.make(models.Contact, lastname=u"ABCDEF", main_contact=True, has_left=False)
+        contact2 = mommy.make(models.Contact, lastname=u"EFGHIJ", main_contact=True, has_left=False)
+        contact3 = mommy.make(models.Contact, lastname=u"KLMNOP", main_contact=True, has_left=False)
+
+        type1 = mommy.make(models.ActionType)
+
+        action11 = mommy.make(models.Action, type=type1, planned_date=datetime(2016, 6, 21))
+        action11.contacts.add(contact1)
+        action11.save()
+
+        action12 = mommy.make(models.Action, type=type1, planned_date=datetime(2015, 6, 22))
+        action12.contacts.add(contact1)
+        action12.save()
+
+        action21 = mommy.make(models.Action, type=type1, planned_date=datetime(2015, 6, 23))
+        action21.contacts.add(contact2)
+        action21.save()
+
+        action32 = mommy.make(models.Action, type=type1, planned_date=datetime(2014, 6, 24))
+        action32.contacts.add(contact3)
+        action32.save()
+
+        data = {
+            "gr0-_-action_{0}_by_date-_-0".format(type1.name_slug()): u"01/01/2015 31/12/2015",
+            "gr0-_-no_action_{0}_by_date-_-1".format(type1.name_slug()): u"01/01/2016 31/12/2016",
+        }
+
+        response = self.client.post(reverse('search'), data=data)
+        self.assertEqual(200, response.status_code)
+
+        soup = BeautifulSoup(response.content)
+        self.assertEqual([], list(soup.select(".field-error")))
+
+        self.assertNotContains(response, contact1.lastname)
+        self.assertContains(response, contact2.lastname)
+        self.assertNotContains(response, contact3.lastname)

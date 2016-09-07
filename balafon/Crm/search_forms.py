@@ -469,12 +469,12 @@ class ActionByPlannedDate(TwoDatesForm):
     name = 'action_by_planned_date'
     label = _(u'Action by planned date')
     is_action_form = True
-    
+
     def get_lookup(self):
         """lookup"""
         datetime1, datetime2 = self._get_datetimes()
-        
-        start_after_end_before = Q(
+
+        single_date = Q(
             end_datetime__isnull=True
         ) & Q(
             planned_date__gte=datetime1
@@ -490,7 +490,63 @@ class ActionByPlannedDate(TwoDatesForm):
             end_datetime__gte=datetime1
         )
 
-        return start_after_end_before | start_before_end_after
+        return single_date | start_before_end_after
+
+
+class ActionOfTypeByDate(ActionByPlannedDate):
+    action_type = None
+
+    def get_queryset(self, queryset):
+        return queryset.filter(self.get_lookup())
+
+    def get_action_queryset(self, queryset):
+        return queryset.filter(type=self.action_type)
+
+
+def get_action_of_type_by_date_forms():
+    """return a list of search form for every action type"""
+    search_forms = []
+    for action_type in models.ActionType.objects.all():
+        # create a list of SearchForm. Each one inherits from ActionOfTypeByDate.
+        # Each one correspond to a different action type
+        search_forms.append(
+            # Create dynamically a class which inherits from ActionOfTypeByDate and set the action_type argument
+            type(
+                'ActionOfType{0}ByDate'.format(action_type.id),
+                (ActionOfTypeByDate, ),
+                {
+                    'action_type': action_type,
+                    'is_action_list_form': True,
+                    'is_action_form': False,
+                    'name': u'action_{0}_by_date'.format(action_type.name_slug()),
+                    'label': u'{0} between by dates'.format(action_type.name)
+                }
+            )
+        )
+    return search_forms
+
+
+def get_no_action_of_type_by_date_forms():
+    """return a list of search form for every action type"""
+    search_forms = []
+    for action_type in models.ActionType.objects.all():
+        # create a list of SearchForm. Each one inherits from ActionOfTypeByDate.
+        # Each one correspond to a different action type
+        search_forms.append(
+            # Create dynamically a class which inherits from ActionOfTypeByDate and set the action_type argument
+            type(
+                'NoActionOfType{0}ByDate'.format(action_type.id),
+                (ActionOfTypeByDate, ),
+                {
+                    'action_type': action_type,
+                    'is_exclude_action_list_form': True,
+                    'is_action_form': False,
+                    'name': u'no_action_{0}_by_date'.format(action_type.name_slug()),
+                    'label': u"No '{0}' action between two dates".format(action_type.name)
+                }
+            )
+        )
+    return search_forms
 
 
 class ActionByStartDate(TwoDatesForm):
