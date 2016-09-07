@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import user_passes_test
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
+from django.utils.text import slugify
 from django.utils.translation import ugettext as _
 
 from colorbox.decorators import popup_redirect
@@ -15,6 +16,7 @@ from coop_cms.utils import paginate
 
 from balafon.Crm import models, forms
 from balafon.Crm.utils import get_actions_by_set
+from balafon.generic import XlsExportView
 from balafon.permissions import can_access
 from balafon.utils import log_error
 
@@ -240,3 +242,48 @@ def add_opportunity(request):
         'Crm/edit_opportunity.html',
         {'next_url': next_url, 'form': form}
     )
+
+
+class ActionsOfOpportunityXlsView(XlsExportView):
+    opportunity = None
+
+    def get_opportunity(self):
+        if not self.opportunity:
+            opportunity_id = self.kwargs.get('opportunity_id', 0)
+            self.opportunity = get_object_or_404(models.Opportunity, id=opportunity_id)
+        return self.opportunity
+
+    def get_doc_name(self):
+        opportunity = self.get_opportunity()
+        return slugify(opportunity.name or _(u'opportunity')) + u".xls"
+
+    def do_fill_workbook(self, workbook):
+        """export to excel all actions of the given opportunity"""
+        opportunity = self.get_opportunity()
+
+        actions = opportunity.action_set.filter(archived=False)
+        actions_by_set = get_actions_by_set(actions)
+
+        headers = (
+            _(u'Subject'), _(u'Start date'), _(u'End date'), _(u'Creation date'), _(u'Type'), _(u'Status'),
+            _(u'Done'), _(u'Number'), _(u'Amount'), _(u'Entities and contacts')
+        )
+
+        for action_set_id, action_set_name, actions, actions_count in actions_by_set:
+            sheet = workbook.add_sheet(action_set_name or _(u'Actions'))
+
+            for index, header in enumerate(headers):
+                self.write_cell(sheet, 0, index, header)
+
+            for index, item in enumerate(actions):
+                line = index + 1
+                self.write_cell(sheet, line, 0, item.subject)
+                self.write_cell(sheet, line, 1, item.planned_date)
+                self.write_cell(sheet, line, 2, item.end_datetime)
+                self.write_cell(sheet, line, 3, item.created)
+                self.write_cell(sheet, line, 4, item.type.name if item.type else u'')
+                self.write_cell(sheet, line, 5, item.status.name if item.status else u'')
+                self.write_cell(sheet, line, 6, _(u'Yes') if item.done else _(u'No'))
+                self.write_cell(sheet, line, 7, item.number)
+                self.write_cell(sheet, line, 8, item.amount)
+                self.write_cell(sheet, line, 9, u', '.join(item.get_entities_and_contacts()))

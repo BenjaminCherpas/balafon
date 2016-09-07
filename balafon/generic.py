@@ -160,6 +160,9 @@ class XlsExportView(View):
         """implement it in base class"""
         pass
 
+    def get_doc_name(self):
+        return self.doc_name
+
     def get(self, *args, **kwargs):
         workbook = xlwt.Workbook()
         self._col_widths = {}
@@ -167,6 +170,6 @@ class XlsExportView(View):
         self.do_fill_workbook(workbook)
 
         response = HttpResponse(content_type="application/ms-excel")
-        response['Content-Disposition'] = 'attachment; filename={0}'.format(self.doc_name)
+        response['Content-Disposition'] = 'attachment; filename={0}'.format(self.get_doc_name())
         workbook.save(response)
         return response

@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 """unit testing"""
 
+from datetime import datetime, date, time
+import xlrd
+
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
 
 from coop_cms.tests import BeautifulSoup
 from model_mommy import mommy
@@ -416,3 +420,110 @@ class OpportunityAutoCompleteTest(BaseTestCase):
         response = self.client.get(reverse('crm_get_opportunities')+'?term=z')
         self.assertContains(response, opp1.name)
         self.assertContains(response, opp2.name)
+
+
+class OpportunityActionsXlsTest(BaseTestCase):
+
+    def test_generate_xls(self):
+        """generate xls file"""
+
+        contact1 = mommy.make(models.Contact)
+        contact2 = mommy.make(models.Contact)
+        entity1 = mommy.make(models.Entity)
+
+        opportunity = mommy.make(models.Opportunity, name=u"Mon projet de l'été")
+        action_set1 = mommy.make(models.ActionSet, name=u"Invites")
+
+        action_type1 = mommy.make(models.ActionType, name=u"Type 1", set=action_set1)
+        action_status1 = mommy.make(models.ActionStatus, name=u"Status 1")
+
+        action_type2 = mommy.make(models.ActionType, name=u"Type 2", set=action_set1)
+        action_status2 = mommy.make(models.ActionStatus, name=u"Status 2")
+
+        action_type3 = mommy.make(models.ActionType, name=u"Type 3")
+        action_status3 = mommy.make(models.ActionStatus, name=u"Status 1")
+
+        action1 = mommy.make(
+            models.Action, opportunity=opportunity,
+            type=action_type1, status=action_status1, subject=u'Subject 1',
+            planned_date=datetime.combine(date.today(), time.min),
+            end_datetime=datetime.now(), done=False
+        )
+        action1.contacts.add(contact1)
+        action1.contacts.add(contact2)
+        action1.entities.add(entity1)
+        action1.save()
+
+        action2 = mommy.make(
+            models.Action, opportunity=opportunity,
+            type=action_type2, status=action_status2, subject=u'Subject 2',
+            planned_date=datetime.combine(date.today(), time.min)
+        )
+        action2.contacts.add(contact1)
+        action2.save()
+
+        action3 = mommy.make(
+            models.Action, opportunity=opportunity,
+            type=action_type3, status=action_status3, subject=u'Subject 3',
+            planned_date=datetime.combine(date.today(), time.min),
+            end_datetime=datetime.now(), done=False
+        )
+
+        action4 = mommy.make(
+            models.Action,
+            type=action_type2, status=action_status2, subject=u'Subject 4',
+            planned_date=datetime.combine(date.today(), time.min)
+        )
+
+        action5 = mommy.make(
+            models.Action, opportunity=opportunity, subject=u'Subject 5'
+        )
+
+        action6 = mommy.make(
+            models.Action, opportunity=opportunity, subject=u'Subject 6'
+        )
+
+        url = reverse('crm_opportunity_actions_xls', args=[opportunity.id])
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+
+        workbook = xlrd.open_workbook(file_contents=response.content, formatting_info=True)
+
+        self.assertEqual(workbook.nsheets, 2)
+
+        sheet1 = workbook.sheet_by_name(_(u'Actions'))
+        sheet2 = workbook.sheet_by_name(action_set1.name)
+
+        self.assertEqual(sheet1.nrows, 1 + 3)
+        self.assertEqual(sheet2.nrows, 1 + 2)
+
+    def test_generate_xls_non_staff(self):
+        """generate xls file without permission"""
+
+        self.user.is_staff = False
+        self.user.save()
+
+        opportunity = mommy.make(models.Opportunity, name=u"Mon projet de l'été")
+
+        mommy.make(
+            models.Action, opportunity=opportunity, subject=u'Subject 5'
+        )
+
+        url = reverse('crm_opportunity_actions_xls', args=[opportunity.id])
+        response = self.client.get(url)
+        self.assertEqual(403, response.status_code)
+
+    def test_generate_xls_anonymous(self):
+        """generate xls file without permission"""
+
+        self.client.logout()
+
+        opportunity = mommy.make(models.Opportunity, name=u"Mon projet de l'été")
+
+        mommy.make(
+            models.Action, opportunity=opportunity, subject=u'Subject 5'
+        )
+
+        url = reverse('crm_opportunity_actions_xls', args=[opportunity.id])
+        response = self.client.get(url)
+        self.assertEqual(403, response.status_code)

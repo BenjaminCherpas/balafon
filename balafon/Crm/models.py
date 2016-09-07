@@ -1428,7 +1428,7 @@ class Action(LastModifiedModel):
     def get_action_template(self):
         if self.type and self.type.action_template:
             try:
-                #Check if the template exists but return its name
+                # Check if the template exists but return its name
                 get_template(self.type.action_template)
                 return self.type.action_template
             except TemplateDoesNotExist:
@@ -1459,6 +1459,12 @@ class Action(LastModifiedModel):
             return queryset
         return ActionMenu.objects.none()
 
+    def get_entities_and_contacts(self):
+        """return list of entities and contacts"""
+        entities_and_contacts = [entity.name for entity in self.entities.all()]
+        entities_and_contacts += [contact.fullname for contact in self.contacts.all()]
+        return entities_and_contacts
+
     def save(self, *args, **kwargs):
         """save"""
 
@@ -1472,7 +1478,7 @@ class Action(LastModifiedModel):
         elif self.done_date and not self.done:
             self.done_date = None
             
-        #generate number automatically based on action type
+        # generate number automatically based on action type
         if self.number == 0 and self.type and self.type.number_auto_generated:
             self.number = self.type.last_number = self.type.last_number + 1
             self.type.save()

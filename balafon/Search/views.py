@@ -386,13 +386,13 @@ def export_contacts_as_excel(request):
             field_dict['entity_name'] = _(u"Entity")
             
             # Add custom fields
-            for cf in CustomField.objects.filter(export_order__gt=0).order_by('export_order'):
-                if cf.model == CustomField.MODEL_CONTACT:
-                    fields.append('custom_field_'+cf.name)
-                    field_dict['custom_field_'+cf.name] = cf.label
-                elif cf.model == CustomField.MODEL_ENTITY:
-                    fields.append('entity_custom_field_'+cf.name)
-                    field_dict['entity_custom_field_'+cf.name] = cf.label
+            for custom_field in CustomField.objects.filter(export_order__gt=0).order_by('export_order'):
+                if custom_field.model == CustomField.MODEL_CONTACT:
+                    fields.append('custom_field_' + custom_field.name)
+                    field_dict['custom_field_' + custom_field.name] = custom_field.label
+                elif custom_field.model == CustomField.MODEL_ENTITY:
+                    fields.append('entity_custom_field_' + custom_field.name)
+                    field_dict['entity_custom_field_' + custom_field.name] = custom_field.label
             
             for index, field in enumerate(fields):
                 if field[:4] == 'get_':

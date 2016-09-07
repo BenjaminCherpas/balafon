@@ -25,9 +25,9 @@ class StockXlsView(XlsExportView):
             sheet.write(line, 2, item.purchase_price if item.purchase_price else 0)
             sheet.write(line, 3, item.stock_count)
             sheet.write(line, 4, item.stock_threshold)
-            sheet.write(line, 5, xlwt.Formula('C{0}*D{0})'.format(line+1)))
+            sheet.write(line, 5, xlwt.Formula('C{0}*D{0})'.format(line + 1)))
 
-        sheet.write(line+2, 5, xlwt.Formula('SUM(F1:F{0})'.format(line+1)))
+        sheet.write(line + 2, 5, xlwt.Formula('SUM(F1:F{0})'.format(line + 1)))
 
 
 class StockAlertXlsView(XlsExportView):
@@ -46,7 +46,7 @@ class StockAlertXlsView(XlsExportView):
                 sheet.write(line, 2, item.purchase_price if item.purchase_price else 0)
                 sheet.write(line, 3, item.stock_count)
                 sheet.write(line, 4, item.stock_threshold)
-                sheet.write(line, 5, xlwt.Formula('C{0}*D{0})'.format(line+1)))
+                sheet.write(line, 5, xlwt.Formula('C{0}*D{0})'.format(line + 1)))
                 line += 1
 
         sheet.write(line+2, 5, xlwt.Formula('SUM(F1:F{0})'.format(line+1)))

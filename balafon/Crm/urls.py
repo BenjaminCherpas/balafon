@@ -180,6 +180,11 @@ urlpatterns = [
         opportunities.remove_action_from_opportunity,
         name='crm_remove_action_from_opportunity'
     ),
+    url(
+        r'opportunity-actions-xls/(?P<opportunity_id>\d+)/$',
+        opportunities.ActionsOfOpportunityXlsView.as_view(),
+        name='crm_opportunity_actions_xls'
+    ),
 
     # custom_fields
     url(

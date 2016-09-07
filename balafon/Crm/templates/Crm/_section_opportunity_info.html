@@ -24,9 +24,11 @@
 </div>
 {% endblock %}
 
-{% block section_menu_name %}<span class="glyphicon glyphicon-pencil"></span> {% trans "Edit" %}{% endblock %}
+{% block section_menu_name %}<span class="glyphicon glyphicon-chevron-down"></span> {% trans "Operations" %}{% endblock %}
 
 {% block section_buttons %}
+  <li><a href="{% url "crm_opportunity_actions_xls" opportunity.id %}">{% trans "Export actions to Excel" %}</a></li>
+  <li><a href="{% url 'search_opportunity' opportunity.id %}">{% trans "View contacts in search" %}</a></li>
   <li><a class="colorbox-form" href="{% url "crm_edit_opportunity" opportunity.id %}">{% trans "Edit" %}</a></li>
   <li><a class="colorbox-form" href="{% url "crm_delete_opportunity" opportunity.id %}">{% trans "Delete" %}</a></li>
 {% endblock %}
