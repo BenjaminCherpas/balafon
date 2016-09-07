@@ -55,6 +55,7 @@ SEARCH_FORMS = [
             search_forms.EntityWithCustomField,
             search_forms.EntityDescriptionForm,
             search_forms.EntityNotesForm,
+            search_forms.ArchivedEntitySearchForm,
         ],
     ), (
         _(u'Contacts'),

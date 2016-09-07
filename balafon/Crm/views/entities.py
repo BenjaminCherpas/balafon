@@ -245,6 +245,38 @@ def delete_entity(request, entity_id):
 
 
 @user_passes_test(can_access)
+@popup_redirect
+def archive_entity(request, entity_id):
+    """view"""
+    entity = get_object_or_404(models.Entity, id=entity_id)
+    if request.method == 'POST':
+        form = forms.ConfirmForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data["confirm"]:
+                entity.archived = not entity.archived
+                entity.save()
+                return HttpResponseRedirect(reverse('crm_view_entity', args=[entity.id]))
+    else:
+        form = forms.ConfirmForm()
+
+    message = _(u'An archived entity is not shown in results searches by default.') + u' '
+    if entity.archived:
+        message += _(u'Are you sure to unarchive {0.name}?').format(entity)
+    else:
+        message += _(u'Are you sure to archive {0.name}?').format(entity)
+
+    return render(
+        request,
+        'balafon/confirmation_dialog.html',
+        {
+            'form': form,
+            'message': message,
+            'action_url': reverse("crm_archive_entity", args=[entity_id]),
+        }
+    )
+
+
+@user_passes_test(can_access)
 def select_entity_and_redirect(request, view_name, template_name):
     """view"""
     if request.method == 'POST':

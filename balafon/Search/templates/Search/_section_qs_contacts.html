@@ -16,6 +16,7 @@
     <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
       <td rowspan={{x.main_contacts|length}}>
         <a href="{% url "crm_view_entity" x.id %}">{{x}}</a>
+        {% if x.archived %}<span class="label label-warning">{% trans "Archived" %}</span>{% endif %}
       </td>
       {% for c in x.main_contacts %}
         {% if not forloop.first %}
@@ -39,7 +40,10 @@
           <a href="{% url "crm_view_contact" x.id %}">{{x.fullname}}</a>
         </td>
       {% else %}
-        <td><a href="{% url "crm_view_entity" e.id %}">{{e}}</a></td>
+        <td>
+          <a href="{% url "crm_view_entity" e.id %}">{{e}}</a>
+          {% if e.archived %}<span class="label label-warning">{% trans "Archived" %}</span>{% endif %}
+        </td>
         <td>
           <a href="{% url "crm_view_contact" x.id %}">{{x.fullname}}</a>
           {%if x.has_left %}<span class="label label-warning ut-has-left">{% trans "has left" %}</span>{% endif %}

@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^edit-entity/(?P<entity_id>\d+)/$', entities.edit_entity, name='crm_edit_entity'),
     url(r'^create-entity/(?P<entity_type_id>\d+)/$', entities.create_entity, name='crm_create_entity'),
     url(r'^delete-entity/(?P<entity_id>\d+)/$', entities.delete_entity, name='crm_delete_entity'),
+    url(r'^archive-entity/(?P<entity_id>\d+)/$', entities.archive_entity, name='crm_archive_entity'),
     url(
         r'^change-contact-entity/(?P<contact_id>\d+)/$',
         entities.change_contact_entity,

@@ -74,6 +74,27 @@ class EntityNotesForm(SearchFieldForm):
         return {'entity__notes__icontains': self.value}
 
 
+class ArchivedEntitySearchForm(SearchFieldForm):
+    """by secondary contact"""
+    name = 'archived_entity'
+    label = _(u'Archived entities')
+
+    def __init__(self, *args, **kwargs):
+        super(ArchivedEntitySearchForm, self).__init__(*args, **kwargs)
+        choices = ((1, _('Include')), (0, _('Only')),)
+        field = forms.ChoiceField(choices=choices, label=self.label)
+        self._add_field(field)
+
+    def get_lookup(self):
+        """lookup"""
+        value = int(self.value)
+        if value == 1:
+            # the lookup 'archived_entity' will be removed by the search form
+            return {}
+        elif value == 0:
+            return {'entity__archived': True}
+
+
 class EntityNameStartsWithSearchForm(SearchFieldForm):
     """by entity name starts with"""
 

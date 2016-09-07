@@ -59,6 +59,7 @@
               {% if forloop.counter0 == 0 %}
                 <span class="glyphicon glyphicon-tower"></span>
                 <a href="{% url "crm_view_entity" e.id %}">{{e.name}}</a>
+                {% if e.archived %}<span class="label label-warning">{% trans "Archived" %}</span>{% endif %}
               {% else %}
                 &nbsp;
               {% endif %}

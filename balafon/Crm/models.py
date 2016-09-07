@@ -340,6 +340,8 @@ class Entity(AddressModel):
     is_single_contact = models.BooleanField(_(u"is single contact"), default=False)
     
     favorites = GenericRelation(Favorite)
+
+    archived = models.BooleanField(default=False, verbose_name=_(u'archived'))
     
     def save(self, *args, **kwargs):
         """save"""

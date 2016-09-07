@@ -93,3 +93,89 @@ class EntitySearchTest(BaseTestCase):
 
         self.assertContains(response, entity3.name)
         self.assertContains(response, contact4.lastname)
+
+    def test_search_archived_entity(self):
+        """no archived entities"""
+        entity1 = mommy.make(models.Entity, name=u"My tiny corp")
+        contact1 = mommy.make(models.Contact, entity=entity1, lastname=u"ABCD", main_contact=True, has_left=False)
+        contact3 = mommy.make(models.Contact, entity=entity1, lastname=u"IJKL", main_contact=True, has_left=False)
+
+        entity2 = mommy.make(models.Entity, name=u"Other corp")
+        contact2 = mommy.make(models.Contact, entity=entity2, lastname=u"WXYZ", main_contact=True, has_left=False)
+
+        entity3 = mommy.make(models.Entity, name=u"tiny tiny", archived=True)
+        contact4 = mommy.make(models.Contact, entity=entity3, lastname=u"MNOP", main_contact=True, has_left=False)
+
+        url = reverse('search')
+
+        data = {"gr0-_-entity_name-_-0": 'tiny'}
+
+        response = self.client.post(url, data=data)
+        self.assertEqual(200, response.status_code)
+
+        self.assertContains(response, entity1.name)
+        self.assertContains(response, contact1.lastname)
+        self.assertContains(response, contact3.lastname)
+
+        self.assertNotContains(response, entity2.name)
+        self.assertNotContains(response, contact2.lastname)
+        self.assertNotContains(response, entity3.name)
+        self.assertNotContains(response, contact4.lastname)
+
+    def test_search_allow_archived_entity(self):
+        """allow archived entities"""
+        entity1 = mommy.make(models.Entity, name=u"My tiny corp")
+        contact1 = mommy.make(models.Contact, entity=entity1, lastname=u"ABCD", main_contact=True, has_left=False)
+        contact3 = mommy.make(models.Contact, entity=entity1, lastname=u"IJKL", main_contact=True, has_left=False)
+
+        entity2 = mommy.make(models.Entity, name=u"Other corp")
+        contact2 = mommy.make(models.Contact, entity=entity2, lastname=u"WXYZ", main_contact=True, has_left=False)
+
+        entity3 = mommy.make(models.Entity, name=u"tiny tiny", archived=True)
+        contact4 = mommy.make(models.Contact, entity=entity3, lastname=u"MNOP", main_contact=True, has_left=False)
+
+        url = reverse('search')
+
+        data = {"gr0-_-entity_name-_-0": 'tiny', "gr0-_-archived_entity-_-1": 1}
+
+        response = self.client.post(url, data=data)
+        self.assertEqual(200, response.status_code)
+
+        self.assertContains(response, entity1.name)
+        self.assertContains(response, contact1.lastname)
+        self.assertContains(response, contact3.lastname)
+
+        self.assertNotContains(response, entity2.name)
+        self.assertNotContains(response, contact2.lastname)
+
+        self.assertContains(response, entity3.name)
+        self.assertContains(response, contact4.lastname)
+
+    def test_search_only_archived_entity(self):
+        """only archived entities"""
+        entity1 = mommy.make(models.Entity, name=u"My tiny corp")
+        contact1 = mommy.make(models.Contact, entity=entity1, lastname=u"ABCD", main_contact=True, has_left=False)
+        contact3 = mommy.make(models.Contact, entity=entity1, lastname=u"IJKL", main_contact=True, has_left=False)
+
+        entity2 = mommy.make(models.Entity, name=u"Other corp")
+        contact2 = mommy.make(models.Contact, entity=entity2, lastname=u"WXYZ", main_contact=True, has_left=False)
+
+        entity3 = mommy.make(models.Entity, name=u"tiny tiny", archived=True)
+        contact4 = mommy.make(models.Contact, entity=entity3, lastname=u"MNOP", main_contact=True, has_left=False)
+
+        url = reverse('search')
+
+        data = {"gr0-_-entity_name-_-0": 'tiny', "gr0-_-archived_entity-_-1": 0}
+
+        response = self.client.post(url, data=data)
+        self.assertEqual(200, response.status_code)
+
+        self.assertNotContains(response, entity1.name)
+        self.assertNotContains(response, contact1.lastname)
+        self.assertNotContains(response, contact3.lastname)
+
+        self.assertNotContains(response, entity2.name)
+        self.assertNotContains(response, contact2.lastname)
+
+        self.assertContains(response, entity3.name)
+        self.assertContains(response, contact4.lastname)

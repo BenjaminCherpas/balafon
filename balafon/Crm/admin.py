@@ -127,9 +127,9 @@ admin.site.register(models.City, CityAdmin)
 
 class EntityAdmin(admin.ModelAdmin):
     """custom admin view"""
-    list_display = ('name', 'type', 'city')
-    search_fields = ['name']
-    list_filter = ['city', 'type']
+    list_display = ['name', 'type', 'city', 'archived', ]
+    search_fields = ['name', ]
+    list_filter = ['city', 'type', 'archived', ]
 
 admin.site.register(models.Entity, EntityAdmin)
 

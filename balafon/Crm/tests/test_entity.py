@@ -348,3 +348,111 @@ class GetEntityIdTestCase(BaseTestCase):
         response = self.client.get(reverse('crm_get_entity_id') + u'?name={0}'.format(entity1.name))
         self.assertEqual(404, response.status_code)
 
+
+class DeleteEntityTestCase(BaseTestCase):
+    """delete entity"""
+
+    def test_view_delete_entity(self):
+        """it should display confirmation page"""
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC')
+        response = self.client.get(reverse('crm_delete_entity', args=[entity.id]))
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, models.Entity.objects.filter(id=entity.id).count())
+
+    def test_delete_entity(self):
+        """it should delete entity"""
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC')
+        response = self.client.post(reverse('crm_delete_entity', args=[entity.id]), data={'confirm': True})
+        self.assertEqual(
+            response.content,
+            '<script>$.colorbox.close(); window.location="{0}";</script>'.format(
+                reverse('balafon_homepage')
+            )
+        )
+        self.assertEqual(0, models.Entity.objects.filter(id=entity.id).count())
+
+    def test_delete_entity_anonymous(self):
+        """it should not be allowed"""
+        self.client.logout()
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC')
+        response = self.client.post(reverse('crm_delete_entity', args=[entity.id]), data={'confirm': True})
+        self.assertEqual(302, response.status_code)
+        login_url = reverse('login')[3:]
+        self.assertTrue(response['Location'].find(login_url) >= 0)
+        self.assertEqual(1, models.Entity.objects.filter(id=entity.id).count())
+
+    def test_delete_entity_not_allowed(self):
+        """it should not be allowed"""
+        self.user.is_staff = False
+        self.user.save()
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC')
+        response = self.client.post(reverse('crm_delete_entity', args=[entity.id]), data={'confirm': True})
+        self.assertEqual(302, response.status_code)
+        login_url = reverse('login')[3:]
+        self.assertTrue(response['Location'].find(login_url) >= 0)
+        self.assertEqual(1, models.Entity.objects.filter(id=entity.id).count())
+
+
+class ArchiveEntityTestCase(BaseTestCase):
+    """archive entity"""
+
+    def test_view_archive_entity(self):
+        """it should display confirmation page"""
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC')
+        self.assertEqual(entity.archived, False)
+        response = self.client.get(reverse('crm_archive_entity', args=[entity.id]))
+        self.assertEqual(200, response.status_code)
+        entity = models.Entity.objects.get(id=entity.id)
+        self.assertEqual(entity.archived, False)
+
+    def test_archive_entity(self):
+        """it should archive"""
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC')
+        self.assertEqual(entity.archived, False)
+        response = self.client.post(reverse('crm_archive_entity', args=[entity.id]), data={'confirm': True})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            response.content,
+            '<script>$.colorbox.close(); window.location="{0}";</script>'.format(
+                reverse('crm_view_entity', args=[entity.id])
+            )
+        )
+        entity = models.Entity.objects.get(id=entity.id)
+        self.assertEqual(entity.archived, True)
+
+    def test_unarchive_entity(self):
+        """it should unarchive"""
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC', archived=True)
+        response = self.client.post(reverse('crm_archive_entity', args=[entity.id]), data={'confirm': True})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            response.content,
+            '<script>$.colorbox.close(); window.location="{0}";</script>'.format(
+                reverse('crm_view_entity', args=[entity.id])
+            )
+        )
+        entity = models.Entity.objects.get(id=entity.id)
+        self.assertEqual(entity.archived, False)
+
+    def test_archive_entity_anonymous(self):
+        """it should not be allowed"""
+        self.client.logout()
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC', archived=False)
+        response = self.client.post(reverse('crm_archive_entity', args=[entity.id]), data={'confirm': True})
+        self.assertEqual(302, response.status_code)
+        login_url = reverse('login')[3:]
+        self.assertTrue(response['Location'].find(login_url) >= 0)
+        entity = models.Entity.objects.get(id=entity.id)
+        self.assertEqual(entity.archived, False)
+
+    def test_archive_entity_not_allowed(self):
+        """it should not be allowed"""
+        self.user.is_staff = False
+        self.user.save()
+        entity = mommy.make(models.Entity, is_single_contact=False, name='ABC', archived=False)
+        response = self.client.post(reverse('crm_archive_entity', args=[entity.id]), data={'confirm': True})
+        self.assertEqual(302, response.status_code)
+        login_url = reverse('login')[3:]
+        self.assertTrue(response['Location'].find(login_url) >= 0)
+        entity = models.Entity.objects.get(id=entity.id)
+        self.assertEqual(entity.archived, False)

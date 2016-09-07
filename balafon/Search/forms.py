@@ -386,10 +386,34 @@ class SearchForm(forms.Form):
     
     def _get_filter_func(self):
         """filter function"""
+
+        class FilterFunc(object):
+            """Function object"""
+            allow_has_left = False
+            allow_archived_entities = False
+
+            def __init__(self, form_names):
+                self.allow_has_left = 'contact_has_left' in form_names
+                self.allow_archived_entities = 'archived_entity' in form_names
+
+            def __call__(self, contact):
+                """The object is called like a function. If returns False, the contact is remove fro search results"""
+                if not contact:
+                    return False
+
+                if not self.allow_has_left and contact.has_left:
+                    # remove contacts who left
+                    return False
+
+                if not self.allow_archived_entities:
+                    # remove contacts who belongs to an archived entity
+                    if not contact.entity.is_single_contact and contact.entity.archived:
+                        return False
+
+                return True
+
         form_names = [form.name for form in chain.from_iterable(self._forms.values())]
-        if 'contact_has_left' in form_names:
-            return lambda contact: contact
-        return lambda contact: contact and (not contact.has_left)
+        return FilterFunc(form_names)
 
     def get_contacts_by_entity(self):
         """get contacts by entities"""
@@ -401,7 +425,7 @@ class SearchForm(forms.Form):
         for contact in contacts:
             pass_filter = filter_func(contact)
             entity = contact.entity if contact else None
-            if entity and not entities.has_key(entity.id):
+            if entity and (not entity.archived or filter_func.allow_archived_entities) and (entity.id not in entities):
                 entities[entity.id] = (entity, [])
                 empty_entities[entity.id] = entity
             if pass_filter:
