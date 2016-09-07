@@ -83,16 +83,29 @@
   {% include "coop_cms/_pagination.html" with disable_js_patches=1 %}
   <script>
     $(function() {
+
+      var markAsExcluded = function () {
+        var val = $("input[name=excluded]").val();
+        var excluded = $("input[name=excluded]").val();
+        excluded = excluded.substring(1, excluded.length-1).split("##");
+        for (var i=0, n=excluded.length; i<n; i++) {
+          if (excluded[i]) {
+            $('a.exclude-contact[rel=' + excluded[i] + ']').closest('tr').addClass('excluded');
+          }
+        }
+      };
+      markAsExcluded();
+
       $(document).on('click', 'a.exclude-contact', function() {
         var val = $("input[name=excluded]").val();
-        var cid = '#'+$(this).attr('rel')+'#';
+        var cid = '#' + $(this).attr('rel') + '#';
         var parent = $(this).closest("tr");
         if (val.search(cid) >= 0) {
           parent.removeClass('excluded');
-          val = val.replace('#'+$(this).attr('rel')+'#', '');
+          val = val.replace('#' + $(this).attr('rel')+ '#', '');
         } else {
           parent.addClass('excluded');
-          val += '#'+$(this).attr('rel')+'#';
+          val += '#' + $(this).attr('rel') + '#';
         }
         $("input[name=excluded]").val(val);
         return false;
@@ -143,13 +156,7 @@
         return false;
       });
       
-      var excluded = $("input[name=excluded]").val()
-      excluded = excluded.substring(1, excluded.length-1).split("##");
-      for (var i=0, n=excluded.length; i<n; i++) {
-        if (excluded[i]) {
-          $('a.exclude-contact[rel=' + excluded[i] + ']').parent().addClass('excluded');
-        }
-      }
+
     });
   </script>
 {% else %}
