@@ -266,7 +266,7 @@ class ActionsOfOpportunityXlsView(XlsExportView):
 
         headers = (
             _(u'Subject'), _(u'Start date'), _(u'End date'), _(u'Creation date'), _(u'Type'), _(u'Status'),
-            _(u'Done'), _(u'Number'), _(u'Amount'), _(u'Entities and contacts')
+            _(u'Done'), _(u'Number'), _(u'Amount'), _(u'Entities and contacts'), _(u'Detail'),
         )
 
         for action_set_id, action_set_name, actions, actions_count in actions_by_set:
@@ -287,3 +287,4 @@ class ActionsOfOpportunityXlsView(XlsExportView):
                 self.write_cell(sheet, line, 7, item.number)
                 self.write_cell(sheet, line, 8, item.amount)
                 self.write_cell(sheet, line, 9, u', '.join(item.get_entities_and_contacts()))
+                self.write_cell(sheet, line, 10, item.detail)
