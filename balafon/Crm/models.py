@@ -1263,6 +1263,9 @@ class ActionType(NamedElement):
         max_length=100, default='', blank=True, verbose_name=_(u'Subject of email'),
         help_text=_(u'This would be used as subject when sending the action by email')
     )
+    show_duration = models.BooleanField(default=False, verbose_name=_(u'show duration'),
+        help_text=_(u'show duration rather than end date on actions')
+    )
 
     def status_defined(self):
         """true if a status is defined for this type"""
@@ -1396,13 +1399,13 @@ class Action(LastModifiedModel):
     end_datetime = models.DateTimeField(_(u'end date'), default=None, blank=True, null=True, db_index=True)
     parent = models.ForeignKey("Action", blank=True, default=None, null=True, verbose_name=_(u"parent"))
     uuid = models.CharField(max_length=100, blank=True, default='', db_index=True)
-    
+
     def __unicode__(self):
         return u'{0} - {1}'.format(self.planned_date, self.subject or self.type)
 
     def show_duration(self):
         """Show duration on action line. If False show end_time"""
-        return True
+        return self.type.show_duration if self.type else False
 
     def duration(self):
         """returns duration of the action"""
