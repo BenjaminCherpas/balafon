@@ -62,7 +62,7 @@ class PrintLabelsPdfTest(BaseTestCase):
         self.assertEqual(1, len(id_template))
         self.assertEqual(4, len(id_template[0].select('option')))
 
-    def test_view_form_not_logged(self, ):
+    def test_view_form_not_logged(self):
         """test view form is not logged"""
         self.client.logout()
 
