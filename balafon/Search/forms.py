@@ -5,6 +5,7 @@ from datetime import date, datetime, time
 from itertools import chain
 import importlib
 import json
+import types
 
 from django.db.models import Q
 from django.conf import settings
@@ -28,15 +29,37 @@ from balafon.Search import models
 from balafon.Search.widgets import DatespanInput
 from balafon.Search.utils import get_date_bounds
 
-SEARCH_FORMS = None
 
+class SearchFormsConfig(object):
 
-def load_from_name(constant_full_name):
-    """load module dynamically"""
-    constant_full_path = constant_full_name.split('.')
-    constant_path, constant_name = '.'.join(constant_full_path[:-1]), constant_full_path[-1]
-    module = importlib.import_module(constant_path)
-    return getattr(module, constant_name)
+    def __init__(self):
+        search_forms = self.load_from_name(settings.SEARCH_FORM_LIST)
+        self.search_forms_list = []
+        for category, forms in search_forms:
+
+            list_of_forms = []
+            for item in forms:
+                if isinstance(item, types.FunctionType):
+                    list_of_forms.extend(item())
+                else:
+                    list_of_forms.append(item)
+
+            self.search_forms_list.append(
+                (
+                    category,
+                    list_of_forms
+                )
+            )
+
+    def load_from_name(self, constant_full_name):
+        """load module dynamically"""
+        constant_full_path = constant_full_name.split('.')
+        constant_path, constant_name = '.'.join(constant_full_path[:-1]), constant_full_path[-1]
+        module = importlib.import_module(constant_path)
+        return getattr(module, constant_name)
+
+    def get_search_forms_list(self):
+        return self.search_forms_list
 
 
 class QuickSearchForm(BsForm):
@@ -49,10 +72,8 @@ class QuickSearchForm(BsForm):
 
 def get_search_forms():
     """cache the configured forms"""
-    global SEARCH_FORMS #pylint: disable=global-statement
-    if not SEARCH_FORMS:
-        SEARCH_FORMS = load_from_name(settings.SEARCH_FORM_LIST)
-    return SEARCH_FORMS
+    search_forms_config = SearchFormsConfig()
+    return search_forms_config.get_search_forms_list()
 
 
 def get_field_form(field):
@@ -65,7 +86,7 @@ def get_field_form(field):
 
 
 class GroupedSelect(forms.Select):
-    """Buld select with all forms"""
+    """Build select with all forms"""
     def render(self, name, value, attrs=None, choices=(), *args, **kwargs):
         if value is None:
             value = ''
@@ -78,7 +99,7 @@ class GroupedSelect(forms.Select):
                 group_label = smart_unicode(group_label) 
                 output.append(u'<optgroup label="%s">' % escape(group_label)) 
             for key, value in group:
-                #build option html
+                # build option html
                 option_value = smart_unicode(key)
                 output.append(
                     u'<option value="{0}"{1}>{2}</option>'.format(
@@ -338,17 +359,30 @@ class SearchForm(forms.Form):
             contacts_set = Contact.objects.all()
             actions_set = Action.objects.all()
             has_action_forms = False
+            actions_list_set = []
+            exclude_actions_list_set = []
 
             if not ('secondary_contact' in [form.name for form in self._forms[key]]):
                 contacts_set = contacts_set.filter(main_contact=True)
             
             for form in self._forms[key]:
 
-                if not form.is_action_form:
-                    contacts_set = form.get_queryset(contacts_set)
-                else:
+                if form.is_action_form:
                     has_action_forms = True
                     actions_set = form.get_queryset(actions_set)
+
+                elif form.is_action_list_form:
+                    actions_list_set.append(form.get_queryset(form.get_action_queryset(Action.objects.all())))
+
+                elif form.is_exclude_action_list_form:
+                    the_actions_queryset = form.get_action_queryset(Action.objects.all())
+                    contacts_set = contacts_set.filter(
+                        Q(action__in=the_actions_queryset) | Q(entity__action__in=the_actions_queryset)
+                    )
+                    exclude_actions_list_set.append(form.get_queryset(the_actions_queryset))
+
+                else:
+                    contacts_set = form.get_queryset(contacts_set)
 
                 if hasattr(form, 'post_process'):
                     post_processors.append(form.post_process)
@@ -359,7 +393,19 @@ class SearchForm(forms.Form):
             if has_action_forms:
                 contacts_set = contacts_set.filter(
                     Q(action__in=actions_set) | Q(entity__action__in=actions_set)
-                ).distinct()
+                )
+
+            for actions_set in actions_list_set:
+                contacts_set = contacts_set.filter(
+                    Q(action__in=actions_set) | Q(entity__action__in=actions_set)
+                )
+
+            for actions_set in exclude_actions_list_set:
+                contacts_set = contacts_set.exclude(
+                    Q(action__in=actions_set) | Q(entity__action__in=actions_set)
+                )
+
+            contacts_set = contacts_set.distinct()
 
             for post_processor in post_processors:
                 contacts_set = post_processor(contacts_set)
@@ -503,6 +549,8 @@ class SearchFieldForm(BsForm):
     contacts_display = False
     multi_values = False
     is_action_form = False
+    is_action_list_form = False
+    is_exclude_action_list_form = False
 
     def __init__(self, block, count, data=None, *args, **kwargs):
         self.block = block
@@ -586,7 +634,7 @@ class TwoDatesForm(SearchFieldForm):
         
     def __getattr__(self, name):
         """get attribute dynamically"""
-        if name == 'clean_'+self._get_field_name():
+        if name == 'clean_' + self._get_field_name():
             return self._clean_field
         return super(TwoDatesForm, self).__getattr__(name)
     

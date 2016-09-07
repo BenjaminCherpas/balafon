@@ -18,6 +18,7 @@ from django.core.urlresolvers import reverse
 from django.template import TemplateDoesNotExist, Context
 from django.template.loader import get_template
 from django.utils.html import mark_safe
+from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
 
@@ -1274,6 +1275,9 @@ class ActionType(NamedElement):
 
     def has_final_status(self):
         return self.allowed_status.filter(is_final=True).exists()
+
+    def name_slug(self):
+        return slugify(self.name)
 
     def save(self, *args, **kwargs):
         """save: create the corresponding menu"""
