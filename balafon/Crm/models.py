@@ -6,16 +6,12 @@ import uuid
 import unicodedata
 from urlparse import urlparse
 
-from django import VERSION as DJANGO_VERSION
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.conf import settings as project_settings
 from django.contrib.auth.models import User
-if DJANGO_VERSION >= (1, 8, 0):
-    from django.contrib.contenttypes.fields import GenericRelation
-else:
-    from django.contrib.contenttypes.generic import GenericRelation
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -324,23 +320,24 @@ class AddressModel(LastModifiedModel):
 
 class Entity(AddressModel):
     """Entity correspond to a company, association, public administration ..."""
-    name = models.CharField(_('name'), max_length=200, db_index=True)
-    description = models.CharField(_('description'), max_length=200, blank=True, default="")
+
+    name = models.CharField(_(u'name'), max_length=200, db_index=True)
+    description = models.CharField(_(u'description'), max_length=200, blank=True, default="")
     type = models.ForeignKey(EntityType, verbose_name=_(u'type'), blank=True, null=True, default=None)
     relationship_date = models.DateField(_(u'relationship date'), default=None, blank=True, null=True)
     
-    logo = models.ImageField(_("logo"), blank=True, default=u"", upload_to=get_entity_logo_dir)
+    logo = models.ImageField(_(u"logo"), blank=True, default=u"", upload_to=get_entity_logo_dir)
     
-    phone = models.CharField(_('phone'), max_length=200, blank=True, default=u'')
-    fax = models.CharField(_('fax'), max_length=200, blank=True, default=u'')
-    email = models.EmailField(_('email'), blank=True, default=u'')
-    website = models.CharField(_('web site'), max_length=200, blank=True, default='')
+    phone = models.CharField(_(u'phone'), max_length=200, blank=True, default=u'')
+    fax = models.CharField(_(u'fax'), max_length=200, blank=True, default=u'')
+    email = models.EmailField(_(u'email'), blank=True, default=u'')
+    website = models.CharField(_(u'web site'), max_length=200, blank=True, default='')
 
-    notes = models.TextField(_('notes'), blank=True, default="")
+    notes = models.TextField(_(u'notes'), blank=True, default="")
     
     imported_by = models.ForeignKey("ContactsImport", default=None, blank=True, null=True)
     
-    is_single_contact = models.BooleanField(_("is single contact"), default=False)
+    is_single_contact = models.BooleanField(_(u"is single contact"), default=False)
     
     favorites = GenericRelation(Favorite)
     

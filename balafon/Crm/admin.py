@@ -116,11 +116,11 @@ class GroupInline(admin.TabularInline):
 
 class CityAdmin(admin.ModelAdmin):
     """custom admin view"""
-    list_display = ['name', 'zip_code', 'parent', 'latitude', 'longitude', 'country']
-    search_fields = ['name']
-    ordering = ['name']
-    list_filter = [HasParentFilter, 'parent__type', 'parent', 'country']
-    raw_id_fields = ('groups',)
+    list_display = ['name', 'zip_code', 'parent', 'latitude', 'longitude', 'country', ]
+    search_fields = ['name', ]
+    ordering = ['name', ]
+    list_filter = [HasParentFilter, 'parent__type', 'parent', 'country', ]
+    raw_id_fields = ['groups', ]
 
 admin.site.register(models.City, CityAdmin)
 
@@ -138,7 +138,7 @@ class OpportunityAdmin(admin.ModelAdmin):
     """custom admin view"""
     list_display = ['name', 'ended', 'get_start_date', 'get_end_date', ]
     search_fields = ['name', ]
-    list_filter = ['ended']
+    list_filter = ['ended', ]
 
 admin.site.register(models.Opportunity, OpportunityAdmin)
 
