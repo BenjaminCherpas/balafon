@@ -171,9 +171,9 @@ class Zone(BaseZone):
 class City(BaseZone):
     """city"""
     
-    district_id = models.CharField(max_length=10, null=True, verbose_name=_(u'district id'))
-    latitude = models.FloatField(null=True, verbose_name=_(u'latitude'))
-    longitude = models.FloatField(null=True, verbose_name=_(u'longitude'))
+    district_id = models.CharField(max_length=10, null=True, verbose_name=_(u'district id'), blank=True)
+    latitude = models.FloatField(null=True, verbose_name=_(u'latitude'), blank=True)
+    longitude = models.FloatField(null=True, verbose_name=_(u'longitude'), blank=True)
     zip_code = models.CharField(max_length=20, blank=True, verbose_name=_(u'zip code'))
     geonames_valid = models.BooleanField(default=False, verbose_name=_(u'is geonames valid'))
     country = models.CharField(max_length=50, blank=True, verbose_name=_(u'country'))  # TODO: Clarify
@@ -1728,12 +1728,13 @@ class SpecialCaseCity(models.Model):
     city = models.ForeignKey(City)
     oldname = models.CharField(_(u'old name'), max_length=100, default="None")
     possibilities = models.CharField(_(u'possibilities'), max_length=500)
-    change_validated = models.CharField(_(u'change validated'), max_length=3, default=0)
+    change_validated = models.CharField(_(u'change validated'), max_length=3, default='0')
+    departement_code = models.CharField(_(u'departement code'), max_length=10, default='', blank=True)
     
     class Meta:
         verbose_name = _(u'special case city')
         verbose_name_plural = _(u'special case cities')
-        ordering = ['city']
+        ordering = ['departement_code', 'city']
 
 
 class MailProvider(models.Model):

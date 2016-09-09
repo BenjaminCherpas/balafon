@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import codecs
 import difflib
 import os.path
@@ -13,22 +15,23 @@ from balafon.Crm.models import SpecialCaseCity
 from django.core.management.base import BaseCommand
 
 
-def remove_accents(txt):
-    ch1 = "àâçéèêëîïôùûüÿ-".decode("utf8")
-    ch2 = "aaceeeeiiouuuy "
-    s = ""
-    for c in txt:
-        i = ch1.find(c)
+def remove_accents(text):
+    chars_with_accent = "àâçéèêëîïôùûüÿ-".decode("utf8")
+    corresponding_chars_without_accents = "aaceeeeiiouuuy "
+    new_string = ""
+    for char in text:
+        i = chars_with_accent.find(char)
         if i >= 0:
-            s += ch2[i]
+            new_string += corresponding_chars_without_accents[i]
         else:
-            s += c
-    return s
+            new_string += char
+    return new_string
 
 
-def special_cases(city, txt):
-    special_case = SpecialCaseCity(city=city, oldname=city.name, possibilities=txt, change_validated="no")
-    special_case.save()
+def special_cases(departement_code, city, txt):
+    special_case = SpecialCaseCity.objects.create(
+        departement_code=departement_code, city=city, oldname=city.name, possibilities=txt, change_validated="no"
+    )
 
 
 def manage_spe_cases():
@@ -39,7 +42,8 @@ def manage_spe_cases():
         try:
             if spe_case.possibilities == "":
                 pass
-            print(spe_case.city.name.encode('utf8'))
+
+            print(spe_case.city.name.encode('utf8'), spe_case.departement_code)
             print("\t[0] : No match")
             temp = spe_case.possibilities.split("|")
             count = 0
@@ -47,7 +51,7 @@ def manage_spe_cases():
                 print("\t[1] : " + spe_case.possibilities)
                 count = 1
             else:
-                for i in range (1,len(temp)):
+                for i in range(1, len(temp)):
                     count += 1
                     print("\t[" + str(i) + "] : " + temp[i])
             choice = -1
@@ -85,9 +89,9 @@ def fill_db():
     geonames_file_name = os.path.join(app_dir_name, 'geonames/FR.csv')
 
     with open(geonames_file_name, "r") as file2:
-        nblines = 0
+        lines_count = 0
         for line in file2:
-            nblines+=1
+            lines_count += 1
             
     with codecs.open(geonames_file_name, "r", "latin-1") as file1:
         count = 0
@@ -95,10 +99,8 @@ def fill_db():
             words = l.split("\t")
             city_name = words[2]
             dept = words[5]
-            if dict_dept.get(dept) is None:
-                dict_dept[dept] = []
-                tab = dict_dept.get(dept)
-                tab.append(city_name)
+            if dept not in dict_dept:
+                dict_dept[dept] = [city_name]
             else:
                 tab = dict_dept.get(dept)
                 tab.append(city_name)
@@ -137,33 +139,36 @@ def fill_db():
             city.latitude = float(words[9])
             city.longitude = float(words[10])
             city.geonames_valid = True
-            city.country = 'France'
+            city.country = u'France'
             city.zip_code = words[1]
             city.save()
 
             count += 1
             if count % 500 == 0:
-                print(str(count) + "/" + str(nblines))
+                print(str(count) + "/" + str(lines_count))
 
     # Modify city names (already in the database) to correspond to GeoNames ones
-    cities = list(City.objects.filter(parent__parent__parent__name='France', geonames_valid=False))
-    for c in cities:
+    existing_cities = list(City.objects.filter(parent__parent__parent__name='France', geonames_valid=False))
+
+    dept_code = ''
+    for existing_city in existing_cities:
         try:
-            if c.parent.type.name != 'Pays':
+            if existing_city.parent.type.type != 'country':
                 # Detect if the city name has already changed (0 if not / 1 if it changed)
                 name_changed = 0
-                cname1 = remove_accents(c.name.lower())
-                tab1 = dict_dept.get(c.parent.name)
-                if tab1:
-                    matches = difflib.get_close_matches(cname1, tab1, cutoff=0.5)
+                city_name = remove_accents(existing_city.name.lower())
+                cities_of_dept = dict_dept.get(existing_city.parent.name)
+                dept_code = existing_city.parent.code
+                if cities_of_dept:
+                    matches = difflib.get_close_matches(city_name, cities_of_dept, cutoff=0.5)
                 else:
                     matches = []
                 if matches:
                     for match in matches:
-                        if remove_accents(match.lower()) == cname1:
-                            print("[saved] " + c.name + " ---> " + match)
-                            c.name = match
-                            c.save()
+                        if remove_accents(match.lower()) == city_name:
+                            print("[saved] " + existing_city.name + " ---> " + match)
+                            existing_city.name = match
+                            existing_city.save()
                             name_changed = 1
 
                     if name_changed == 0:
@@ -171,23 +176,23 @@ def fill_db():
                             print("No result found")
 
                         elif len(matches) == 1:
-                            special_cases(c, matches[0])
-                            print("[Special Cases] " + c.name)
+                            special_cases(dept_code, existing_city, matches[0])
+                            print("[Special Cases] " + existing_city.name)
 
                         elif len(matches) > 1:
                             possibilities = ""
-                            for e in matches:
-                                possibilities = possibilities + "|" + e
+                            for match in matches:
+                                possibilities = possibilities + "|" + match
                             if possibilities != "":
-                                special_cases(c, possibilities)
-                            print("[Special Cases] " + c.name)
+                                special_cases(dept_code, existing_city, possibilities)
+                            print("[Special Cases] " + existing_city.name)
 
         except TypeError as err:
-            print '>>> TypeError', err
+            print('>>> TypeError', err)
             raise
 
         except UnicodeEncodeError:
-            special_cases(c, "")
+            special_cases(dept_code, existing_city, "")
             pass
         except AttributeError:
             pass    

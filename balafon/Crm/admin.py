@@ -120,6 +120,7 @@ class CityAdmin(admin.ModelAdmin):
     search_fields = ['name', ]
     ordering = ['name', ]
     list_filter = [HasParentFilter, 'parent__type', 'parent', 'country', ]
+    list_editable = ['parent', ]
     raw_id_fields = ['groups', ]
 
 admin.site.register(models.City, CityAdmin)
@@ -241,7 +242,7 @@ admin.site.register(models.StreetType)
 
 
 class SpecialCaseCityAdmin(admin.ModelAdmin):
-    list_display = ['city', 'oldname', 'possibilities']
+    list_display = ['city', 'oldname', 'possibilities', 'departement_code']
     list_filter = ['change_validated']
     search_fields = ['city__name']
 
