@@ -93,28 +93,54 @@ def fill_db():
         count = 0
         for l in file1:
             words = l.split("\t")
-            cname = words[2]
+            city_name = words[2]
             dept = words[5]
             if dict_dept.get(dept) is None:
                 dict_dept[dept] = []
                 tab = dict_dept.get(dept)
-                tab.append(cname)
+                tab.append(city_name)
             else:
                 tab = dict_dept.get(dept)
-                tab.append(cname)
+                tab.append(city_name)
             zone = Zone.objects.get(name=dept)
 
-            city = City(
-                name=cname,
-                parent=zone,
-                district_id=words[8],
-                latitude=float(words[9]),
-                longitude=float(words[10]),
-                geonames_valid=True,
-                country='France',
-                zip_code=words[1]
-            )
+            try:
+                city = City.objects.get(name=city_name, parent=zone)
+
+            except City.DoesNotExist:
+                city = City.objects.create(name=city_name, parent=zone)
+
+            except City.MultipleObjectsReturned:
+                cities = City.objects.filter(name=city_name, parent=zone)
+                city = cities[0]
+                for duplicated_city in cities.exclude(id=city.id):
+
+                    for contact in duplicated_city.contact_set.all():
+                        contact.city = city
+                        contact.save()
+
+                    for contact in duplicated_city.contact_billing_set.all():
+                        contact.billing_city = city
+                        contact.save()
+
+                    for entity in duplicated_city.entity_set.all():
+                        entity.city = city
+                        entity.save()
+
+                    for entity in duplicated_city.entity_billing_set.all():
+                        entity.billing_city = city
+                        entity.save()
+
+                    duplicated_city.delete()
+
+            city.district_id = words[8]
+            city.latitude = float(words[9])
+            city.longitude = float(words[10])
+            city.geonames_valid = True
+            city.country = 'France'
+            city.zip_code = words[1]
             city.save()
+
             count += 1
             if count % 500 == 0:
                 print(str(count) + "/" + str(nblines))
@@ -161,7 +187,7 @@ def fill_db():
             raise
 
         except UnicodeEncodeError:
-            special_cases(c,"")
+            special_cases(c, "")
             pass
         except AttributeError:
             pass    
