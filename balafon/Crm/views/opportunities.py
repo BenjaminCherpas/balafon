@@ -265,8 +265,8 @@ class ActionsOfOpportunityXlsView(XlsExportView):
         actions_by_set = get_actions_by_set(actions)
 
         headers = (
-            _(u'Subject'), _(u'Start date'), _(u'End date'), _(u'Creation date'), _(u'Type'), _(u'Status'),
-            _(u'Done'), _(u'Number'), _(u'Amount'), _(u'Entities and contacts'), _(u'Detail'),
+            _(u'Subject'), _(u'Start date'), _(u'End date'), _(u'Duration'), _(u'Creation date'), _(u'Type'),
+            _(u'Status'), _(u'Done'), _(u'Number'), _(u'Amount'), _(u'Entities and contacts'), _(u'Detail'),
         )
 
         for action_set_id, action_set_name, actions, actions_count in actions_by_set:
@@ -280,11 +280,12 @@ class ActionsOfOpportunityXlsView(XlsExportView):
                 self.write_cell(sheet, line, 0, item.subject)
                 self.write_cell(sheet, line, 1, item.planned_date)
                 self.write_cell(sheet, line, 2, item.end_datetime)
-                self.write_cell(sheet, line, 3, item.created)
-                self.write_cell(sheet, line, 4, item.type.name if item.type else u'')
-                self.write_cell(sheet, line, 5, item.status.name if item.status else u'')
-                self.write_cell(sheet, line, 6, _(u'Yes') if item.done else _(u'No'))
-                self.write_cell(sheet, line, 7, item.number)
-                self.write_cell(sheet, line, 8, item.amount)
-                self.write_cell(sheet, line, 9, u', '.join(item.get_entities_and_contacts()))
-                self.write_cell(sheet, line, 10, item.detail)
+                self.write_cell(sheet, line, 3, item.duration() if item.show_duration() else '')
+                self.write_cell(sheet, line, 4, item.created)
+                self.write_cell(sheet, line, 5, item.type.name if item.type else u'')
+                self.write_cell(sheet, line, 6, item.status.name if item.status else u'')
+                self.write_cell(sheet, line, 7, _(u'Yes') if item.done else _(u'No'))
+                self.write_cell(sheet, line, 8, item.number)
+                self.write_cell(sheet, line, 9, item.amount)
+                self.write_cell(sheet, line, 10, u', '.join(item.get_entities_and_contacts()))
+                self.write_cell(sheet, line, 11, item.detail)
