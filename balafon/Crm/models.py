@@ -508,19 +508,22 @@ class Entity(AddressModel):
         """additional fields"""
         return CustomField.objects.filter(model=CustomField.MODEL_ENTITY)
 
+    def get_custom_field(self, name):
+        try:
+            custom_field = CustomField.objects.get(model=CustomField.MODEL_ENTITY, name=name)
+            custom_field_value = self.entitycustomfieldvalue_set.get(entity=self, custom_field=custom_field)
+            return custom_field_value.value
+        except EntityCustomFieldValue.DoesNotExist:
+            return u''  # If no value defined: return empty string
+
     def __getattribute__(self, attr):
         """add additional fields to the object"""
         prefix = "custom_field_"
         prefix_length = len(prefix)
         if attr[:prefix_length] == prefix:
             field_name = attr[prefix_length:]
-            try:
-                custom_field = CustomField.objects.get(model=CustomField.MODEL_ENTITY, name=field_name)
-                custom_field_value = self.entitycustomfieldvalue_set.get(entity=self, custom_field=custom_field)
-                return custom_field_value.value
-            except EntityCustomFieldValue.DoesNotExist:
-                return u''  # If no value defined: return empty string
-        return object.__getattribute__(self, attr)
+            return self.get_custom_field(field_name)
+        return super(Entity, self).__getattribute__(attr)
 
     class Meta:
         verbose_name = _(u'entity')
@@ -783,6 +786,15 @@ class Contact(AddressModel):
     def get_custom_fields(self):
         """additional fields"""
         return CustomField.objects.filter(model=CustomField.MODEL_CONTACT)
+
+    def get_custom_field(self, name):
+        """additional fields"""
+        try:
+            custom_field = CustomField.objects.get(model=CustomField.MODEL_CONTACT, name=name)
+            custom_field_value = self.contactcustomfieldvalue_set.get(contact=self, custom_field=custom_field)
+            return custom_field_value.value
+        except ContactCustomFieldValue.DoesNotExist:
+            return u''  # If no value defined: return empty string
         
     def get_name_and_entity(self):
         """name and entity"""
@@ -833,12 +845,7 @@ class Contact(AddressModel):
             prefix_length = len(prefix)
             if attr[:prefix_length] == prefix:
                 field_name = attr[prefix_length:]
-                try:
-                    custom_field = CustomField.objects.get(model=CustomField.MODEL_CONTACT, name=field_name)
-                    custom_field_value = self.contactcustomfieldvalue_set.get(contact=self, custom_field=custom_field)
-                    return custom_field_value.value
-                except ContactCustomFieldValue.DoesNotExist:
-                    return u''  # If no value defined: return empty string
+                return self.get_custom_field(field_name)
             else:
                 entity_prefix = "entity_"
                 full_prefix = entity_prefix + prefix
@@ -846,7 +853,7 @@ class Contact(AddressModel):
                     # return self.entity.custom_field_<something>
                     return getattr(self.entity, attr[len(entity_prefix):])
 
-        return object.__getattribute__(self, attr)
+        return super(Contact, self).__getattribute__(attr)
     
     def get_absolute_url(self):
         """url to contact page"""
@@ -1031,14 +1038,14 @@ class Contact(AddressModel):
 
         super(Contact, self).save(*args, **kwargs)
         if not self.uuid:
-            ascii_name = unicodedata.normalize('NFKD', unicode(self.fullname)).encode("ascii", 'ignore')
+            ascii_name = unicodedata.normalize('NFKD', u"{0}".format(self.fullname)).encode("ascii", 'ignore')
             name = u'{0}-contact-{1}-{2}-{3}'.format(project_settings.SECRET_KEY, self.id, ascii_name, self.email)
-            name = unicodedata.normalize('NFKD', unicode(name)).encode("ascii", 'ignore')
-            self.uuid = unicode(uuid.uuid5(uuid.NAMESPACE_URL, name))
+            name = unicodedata.normalize('NFKD', u"{0}".format(name)).encode("ascii", 'ignore')
+            self.uuid = u"{0}".format(uuid.uuid5(uuid.NAMESPACE_URL, name))
             return super(Contact, self).save()
         
         if self.entity.is_single_contact:
-            #force the entity name for ordering
+            # force the entity name for ordering
             self.entity.save()
             
         if self.old_address != self.address:

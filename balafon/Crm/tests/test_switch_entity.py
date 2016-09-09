@@ -16,6 +16,7 @@ class ChangeContactEntityTest(BaseTestCase):
     OPTION_CREATE_NEW_ENTITY = 2
     OPTION_SWITCH_SINGLE_CONTACT = 3
     OPTION_SWITCH_ENTITY_CONTACT = 4
+    OPTION_RECREATE_SINGLE_CONTACT = 5
 
     def test_view_change_contact_entity(self):
         entity = mommy.make(models.Entity, is_single_contact=False)
@@ -28,7 +29,8 @@ class ChangeContactEntityTest(BaseTestCase):
             self.OPTION_ADD_TO_EXISTING_ENTITY,
             self.OPTION_CREATE_NEW_ENTITY,
             self.OPTION_SWITCH_SINGLE_CONTACT,
-            #self.OPTION_SWITCH_ENTITY_CONTACT
+            # self.OPTION_SWITCH_ENTITY_CONTACT
+            self.OPTION_RECREATE_SINGLE_CONTACT,
         ]
         self.assertEqual(
             [x["value"] for x in soup.select("select option")],
@@ -44,9 +46,10 @@ class ChangeContactEntityTest(BaseTestCase):
         soup = BeautifulSoup(response.content)
         expected = [
             self.OPTION_ADD_TO_EXISTING_ENTITY,
-            #self.OPTION_CREATE_NEW_ENTITY,
-            #self.OPTION_SWITCH_SINGLE_CONTACT,
+            # self.OPTION_CREATE_NEW_ENTITY,
+            # self.OPTION_SWITCH_SINGLE_CONTACT,
             self.OPTION_SWITCH_ENTITY_CONTACT
+            # self.OPTION_RECREATE_SINGLE_CONTACT,
         ]
         self.assertEqual(
             [x["value"] for x in soup.select("select option")],
@@ -76,7 +79,6 @@ class ChangeContactEntityTest(BaseTestCase):
         self.assertEqual(contact.city, city1)
         self.assertEqual(contact.phone, "007")
 
-
     def test_make_single_contact_entity(self):
         city1 = mommy.make(models.City)
 
@@ -100,7 +102,6 @@ class ChangeContactEntityTest(BaseTestCase):
         self.assertEqual(contact.zip_code, "42000")
         self.assertEqual(contact.city, city1)
         self.assertEqual(contact.phone, "007")
-
 
     def test_change_to_new_entity(self):
         city1 = mommy.make(models.City)
@@ -241,3 +242,55 @@ class ChangeContactEntityTest(BaseTestCase):
 
         contact = models.Contact.objects.get(id=contact.id)
         self.assertEqual(contact.entity, entity)
+
+    def test_recreate_as_single_contact(self):
+        city1 = mommy.make(models.City)
+
+        entity = mommy.make(
+            models.Entity, is_single_contact=False,
+            address="Abc", zip_code="42000", city=city1, phone="007", email="toto@toto.fr"
+        )
+        contact = mommy.make(
+            models.Contact, entity=entity
+        )
+
+        group = mommy.make(models.Group)
+        group.entities.add(entity)
+        group.save()
+
+        action = mommy.make(models.Action)
+        action.entities.add(entity)
+        action.save()
+
+        entity.set_custom_field('test', 'hello')
+        entity.set_custom_field('only_on_entity', 'hello')
+        contact.set_custom_field('test', '')
+
+        url = reverse('crm_change_contact_entity', args=[contact.id])
+        data = {
+            'option': self.OPTION_RECREATE_SINGLE_CONTACT,
+        }
+
+        response = self.client.post(url, data=data, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(1, models.Contact.objects.count())
+        contact = models.Contact.objects.all()[0]
+
+        self.assertEqual(contact.entity.contact_set.count(), 1)
+
+        self.assertEqual(contact.address, "Abc")
+        self.assertEqual(contact.zip_code, "42000")
+        self.assertEqual(contact.city, city1)
+        self.assertEqual(contact.phone, "007")
+        self.assertEqual(contact.email, "toto@toto.fr")
+
+        self.assertEqual(1, group.contacts.count())
+        self.assertEqual(0, group.entities.count())
+        self.assertTrue(contact in group.contacts.all())
+
+        self.assertEqual(1, action.contacts.count())
+        self.assertEqual(0, action.entities.count())
+        self.assertTrue(contact in action.contacts.all())
+
+        self.assertEqual('hello', contact.get_custom_field('test'))

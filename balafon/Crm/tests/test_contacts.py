@@ -45,7 +45,7 @@ class AddressOverloadTest(BaseTestCase):
         entity_address = {
             'address': u'rue Jules Rimet',
             'address2': u'lot du stade',
-            'address2': u'cité St-Laurent',
+            'address3': u'cité St-Laurent',
             'cedex': u'Cedex 2',
             'zip_code': u'12345',
             'city': city1,
@@ -54,7 +54,7 @@ class AddressOverloadTest(BaseTestCase):
         contact_address = {
             'address': u'',
             'address2': u'',
-            'address2': u'',
+            'address3': u'',
             'cedex': u'',
             'zip_code': u'',
             'city': None,
@@ -74,7 +74,7 @@ class AddressOverloadTest(BaseTestCase):
         entity_address = {
             'address': u'rue Jules Rimet',
             'address2': u'lot du stade',
-            'address2': u'cité St-Laurent',
+            'address3': u'cité St-Laurent',
             'cedex': u'Cedex 2',
             'zip_code': '12345',
             'city': city1,
@@ -83,7 +83,7 @@ class AddressOverloadTest(BaseTestCase):
         contact_address = {
             'address': u'rue des tilleuls',
             'address2': u'lot des arbres',
-            'address2': u'verrerie',
+            'address3': u'verrerie',
             'cedex': u'Cedex 3',
             'zip_code': '12346',
             'city': city2,
@@ -103,7 +103,7 @@ class AddressOverloadTest(BaseTestCase):
         entity_address = {
             'address': u'rue Jules Rimet',
             'address2': u'lot du stade',
-            'address2': u'cité St-Laurent',
+            'address3': u'cité St-Laurent',
             'cedex': u'Cedex 2',
             'zip_code': '12345',
             'city': city1,
@@ -112,7 +112,7 @@ class AddressOverloadTest(BaseTestCase):
         base_contact_address = {
             'address': u'rue des tilleuls',
             'address2': u'lot des arbres',
-            'address2': u'verrerie',
+            'address3': u'verrerie',
             'cedex': u'Cedex 3',
             'zip_code': '12346',
             'city': city2,

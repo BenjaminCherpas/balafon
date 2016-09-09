@@ -121,6 +121,7 @@ class ChangeContactEntityForm(forms.Form):
     OPTION_CREATE_NEW_ENTITY = 2
     OPTION_SWITCH_SINGLE_CONTACT = 3
     OPTION_SWITCH_ENTITY_CONTACT = 4
+    OPTION_RECREATE_SINGLE_CONTACT = 5
 
     OPTION_CHOICES = (
         (0, ""),
@@ -128,6 +129,7 @@ class ChangeContactEntityForm(forms.Form):
         (OPTION_CREATE_NEW_ENTITY, _(u"Create a new entity")),
         (OPTION_SWITCH_SINGLE_CONTACT, _(u"Switch to single contact")),
         (OPTION_SWITCH_ENTITY_CONTACT, _(u"Switch to entity contact")),
+        (OPTION_RECREATE_SINGLE_CONTACT, _(u"Recreate as single contact"))
     )
 
     option = forms.ChoiceField(label=_(u"What to do?"))
@@ -144,7 +146,9 @@ class ChangeContactEntityForm(forms.Form):
         super(ChangeContactEntityForm, self).__init__(*args, **kwargs)
 
         if contact.entity.is_single_contact:
-            single_contact_choices = (self.OPTION_CREATE_NEW_ENTITY, self.OPTION_SWITCH_SINGLE_CONTACT)
+            single_contact_choices = (
+                self.OPTION_CREATE_NEW_ENTITY, self.OPTION_SWITCH_SINGLE_CONTACT, self.OPTION_RECREATE_SINGLE_CONTACT,
+            )
             choices = [choice for choice in self.OPTION_CHOICES if choice[0] not in single_contact_choices]
         else:
             choices = [choice for choice in self.OPTION_CHOICES if choice[0] != self.OPTION_SWITCH_ENTITY_CONTACT]
@@ -156,6 +160,7 @@ class ChangeContactEntityForm(forms.Form):
             self.OPTION_CREATE_NEW_ENTITY: self._create_new_entity,
             self.OPTION_SWITCH_SINGLE_CONTACT: self._switch_single_contact,
             self.OPTION_SWITCH_ENTITY_CONTACT: self._switch_entity_contact,
+            self.OPTION_RECREATE_SINGLE_CONTACT: self._recreate_single_contact,
         }
 
     def clean_option(self):
@@ -205,10 +210,61 @@ class ChangeContactEntityForm(forms.Form):
             is_single_contact=True,
             name=u"{0.lastname} {0.firstname}".format(self.contact).lower()
         )
+
         self.contact.save()
         self.contact.entity.default_contact.delete()
         self.contact.entity.save()
         old_entity.save()
+
+    def _recreate_single_contact(self):
+        """switch to single contact"""
+        old_entity = self.contact.entity
+        self.contact.entity = models.Entity.objects.create(
+            is_single_contact=True,
+            name=u"{0.lastname} {0.firstname}".format(self.contact).lower()
+        )
+
+        # Delete the default contact
+        default_contact = self.contact.entity.default_contact
+        self.contact.save()
+        default_contact.delete()
+
+        field_names = (
+            'phone', 'email', 'address', 'address2', 'address3', 'latitude', 'longitude', 'zip_code', 'cedex', 'city',
+            'street_number', 'street_type', 'billing_address', 'billing_address2', 'billing_address3',
+            'billing_zip_code', 'billing_cedex', 'billing_city', 'billing_street_number', 'billing_street_type',
+        )
+
+        # Set values for common fields between contacts and entities
+        for field_name in field_names:
+            value = getattr(old_entity, field_name)
+            if value:
+                setattr(self.contact, field_name, value)
+        self.contact.save()
+
+        # Set the action on the new contact
+        for action in old_entity.action_set.all():
+            action.entities.remove(old_entity)
+            action.contacts.add(self.contact)
+            action.save()
+
+        # Set the group on the new contact
+        for group in old_entity.group_set.all():
+            group.entities.remove(old_entity)
+            group.contacts.add(self.contact)
+            group.save()
+
+        # Set the common custom fields
+        contact_custom_field_names = [_field.name for _field in self.contact.get_custom_fields()]
+        for entitie_custom_field in old_entity.get_custom_fields():
+            if entitie_custom_field.name in contact_custom_field_names:
+                self.contact.set_custom_field(
+                    entitie_custom_field.name,
+                    old_entity.get_custom_field(entitie_custom_field.name)
+                )
+
+        # Delete the old entity
+        old_entity.delete()
 
     def _switch_entity_contact(self):
         """switch to entity"""
