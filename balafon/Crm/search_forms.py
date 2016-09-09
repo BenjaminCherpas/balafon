@@ -519,7 +519,7 @@ def get_action_of_type_by_date_forms():
                     'is_action_list_form': True,
                     'is_action_form': False,
                     'name': u'action_{0}_by_date'.format(action_type.name_slug()),
-                    'label': u'{0} between by dates'.format(action_type.name)
+                    'label': _(u"'{0}' between by dates").format(action_type.name)
                 }
             )
         )
@@ -542,7 +542,7 @@ def get_no_action_of_type_by_date_forms():
                     'is_exclude_action_list_form': True,
                     'is_action_form': False,
                     'name': u'no_action_{0}_by_date'.format(action_type.name_slug()),
-                    'label': u"No '{0}' action between two dates".format(action_type.name)
+                    'label': _(u"No '{0}' action between two dates").format(action_type.name)
                 }
             )
         )
