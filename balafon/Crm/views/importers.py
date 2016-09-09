@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """import data from files"""
 
+from __future__ import print_function
+
 from datetime import datetime
 import email
 import os.path
@@ -196,7 +198,9 @@ def _set_contact_and_entity(contact_data, entity_dict, extract_from_email):
 def _set_contact_roles(contact_data, role_dict):
     """set the contact role properly"""
 
-    split_roles = lambda text, sep: [elt.strip() for elt in text.split(sep) if elt.strip()]
+    def split_roles(text, sep):
+        return [elt.strip() for elt in text.split(sep) if elt.strip()]
+
     roles = contact_data['role']
     if ';' in roles:
         roles = split_roles(roles, ";")
@@ -252,7 +256,7 @@ def read_contacts(reader, fields, extract_from_email):
         counter += 1
 
         if key == 0:
-            #remove the header row
+            # remove the header row
             continue
 
         contact_data = _fill_contact_data(fields, row)
@@ -299,7 +303,7 @@ def get_imports_fields():
         'entity.groups', 'groups', 'fav_lang', 'title', 'birth_date'
     ]
 
-    #custom fields
+    # custom fields
     custom_fields_count = models.CustomField.objects.all().aggregate(Max('import_order'))['import_order__max']
     if not custom_fields_count:
         custom_fields_count = 0
@@ -327,7 +331,7 @@ def contacts_import_template(request):
 
     cols = fields[:len(fields) - len(custom_fields)] + custom_fields
 
-    template_file = u";".join([u'"{0}"'.format(unicode(col)) for col in cols])+u"\n"
+    template_file = u";".join([u'"{0}"'.format(u'{0}'.format(col)) for col in cols])+u"\n"
 
     return HttpResponse(template_file, content_type="text/csv", )
 
@@ -337,9 +341,9 @@ def _create_contact(contact_data, contacts_import, entity_dict):
     # Entity
     if settings.DEBUG:
         try:
-            print contact_data['entity'], contact_data['lastname']
+            print(contact_data['entity'], contact_data['lastname'])
         except UnicodeError:
-            print '##!'
+            print('##!')
 
     if not contact_data['entity.type']:
         entity_type = contacts_import.entity_type
@@ -500,7 +504,7 @@ def confirm_contacts_import(request, import_id):
     fields, custom_fields = get_imports_fields()
 
     custom_fields_count = len(custom_fields)
-    cf_names = ['cf_{0}'.format(idx) for idx in xrange(1, custom_fields_count+1)]
+    cf_names = ['cf_{0}'.format(idx) for idx in range(1, custom_fields_count + 1)]
 
     contacts_import = get_object_or_404(models.ContactsImport, id=import_id)
     try:
@@ -522,7 +526,7 @@ def confirm_contacts_import(request, import_id):
                 )
 
                 if 'create_contacts' in request.POST:
-                    #create entities
+                    # create entities
                     entity_dict = {}
                     for contact_data in contacts:
 

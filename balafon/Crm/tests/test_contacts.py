@@ -594,7 +594,7 @@ class EditContactTest(BaseTestCase):
         data = {
             'lastname': 'Dupond',
             'firstname': 'Paul',
-            'city': models.City.objects.get(name="Paris").id,
+            'city': models.City.objects.create(name="Paris").id,
         }
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
@@ -1213,7 +1213,7 @@ class EditContactSubscriptionTest(BaseTestCase):
         data = {
             'lastname': 'Dupond',
             'firstname': 'Paul',
-            'city': models.City.objects.get(name="Paris").id,
+            'city': models.City.objects.create(name="Paris").id,
             'subscription_{0}'.format(st1.id): True,
             'subscription_{0}'.format(st2.id): False,
         }
@@ -1245,7 +1245,7 @@ class EditContactSubscriptionTest(BaseTestCase):
         data = {
             'lastname': 'Dupond',
             'firstname': 'Paul',
-            'city': models.City.objects.get(name="Paris").id,
+            'city': models.City.objects.create(name="Paris").id,
             'subscription_{0}'.format(st1.id): True,
             'subscription_{0}'.format(st2.id): False,
         }

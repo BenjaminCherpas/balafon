@@ -245,7 +245,7 @@ class EditEntityTestCase(BaseTestCase):
         url = reverse('crm_edit_entity', args=[entity.id])
         data = {
             'name': 'Dupond SA',
-            'city': models.City.objects.get(name="Paris").id,
+            'city': models.City.objects.create(name="Paris").id,
         }
         response = self.client.post(url, data=data)
         self.assertEqual(200, response.status_code)

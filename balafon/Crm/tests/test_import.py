@@ -93,32 +93,36 @@ class ImportFileTest(BaseTestCase):
 
     def test_view_confirm_import(self):
         """view confirm contact"""
+
+        # Create Paris
+        mommy.make(models.City, name='Paris', parent=models.Zone.objects.get(code="75"))
+
         self.test_create_contacts_import("contacts1.csv")
         url = reverse('crm_confirm_contacts_import', args=[self.contacts_import.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         soup = BeautifulSoup(response.content)
         table = soup.select("table.ut-contacts")[0]
-        #header + 1 contact
         self.assertEqual(len(table.select("tr")), 2)
 
-        #1 line and 6 columns
+        # 1 line and 6 columns
         self.assertEqual(len(table.select("tr > td")), 11)
 
         self.assertEqual(table.select("tr > td")[0].text, u"Big corp")
         self.assertEqual(table.select("tr > td")[1].text, u"Corp")
-        #self.assertEqual(table.select("tr > td")[2].text, _(u'Mr'))
         self.assertEqual(table.select("tr > td")[3].text, u"Doe")
         self.assertEqual(table.select("tr > td")[4].text, u"John")
         self.assertEqual(table.select("tr > td")[5].text, u'john.doe@mailinator.com')
         self.assertEqual(table.select("tr > td")[6].text, u"Paris")
-        self.assertEqual(table.select("tr > td")[7].text, u"Lyon")
+        self.assertEqual(table.select("tr > td")[7].text, u"Lyon (69)")
         self.assertEqual(
             [group.strip() for group in table.select("tr > td")[8].text.strip().split(";")],
             [u"Client", "Grand compte"]
         )
         self.assertEqual(table.select("tr > td")[9].text.strip(), u"marketing")
         self.assertEqual(table.select("tr > td")[10].text.strip(), u"Boss")
+
+        self.assertEqual(1, models.City.objects.count())
 
     def test_confirm_import(self):
         """view confirm contact"""
