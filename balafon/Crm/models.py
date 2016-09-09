@@ -508,7 +508,7 @@ class Entity(AddressModel):
         """additional fields"""
         return CustomField.objects.filter(model=CustomField.MODEL_ENTITY)
 
-    def get_custom_field(self, name):
+    def get_custom_field_value(self, name):
         try:
             custom_field = CustomField.objects.get(model=CustomField.MODEL_ENTITY, name=name)
             custom_field_value = self.entitycustomfieldvalue_set.get(entity=self, custom_field=custom_field)
@@ -522,7 +522,7 @@ class Entity(AddressModel):
         prefix_length = len(prefix)
         if attr[:prefix_length] == prefix:
             field_name = attr[prefix_length:]
-            return self.get_custom_field(field_name)
+            return self.get_custom_field_value(field_name)
         return super(Entity, self).__getattribute__(attr)
 
     class Meta:
@@ -787,7 +787,7 @@ class Contact(AddressModel):
         """additional fields"""
         return CustomField.objects.filter(model=CustomField.MODEL_CONTACT)
 
-    def get_custom_field(self, name):
+    def get_custom_field_value(self, name):
         """additional fields"""
         try:
             custom_field = CustomField.objects.get(model=CustomField.MODEL_CONTACT, name=name)
@@ -807,7 +807,7 @@ class Contact(AddressModel):
         get an attribute: look if an additional field exists
         If an attribute is not defined: for example address: try to get it from entity
         """
-        if attr[:4] == "get_":
+        if attr[:4] == "get_" and attr != 'get_custom_field_value':
             address_fields = ('address', 'address2', 'address3', 'zip_code', 'cedex', 'city')
             billing_address_fields = (
                 'billing_address', 'billing_address2', 'billing_address3', 'billing_zip_code', 'billing_cedex',
@@ -845,7 +845,7 @@ class Contact(AddressModel):
             prefix_length = len(prefix)
             if attr[:prefix_length] == prefix:
                 field_name = attr[prefix_length:]
-                return self.get_custom_field(field_name)
+                return self.get_custom_field_value(field_name)
             else:
                 entity_prefix = "entity_"
                 full_prefix = entity_prefix + prefix

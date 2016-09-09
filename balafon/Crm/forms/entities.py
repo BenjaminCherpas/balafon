@@ -260,7 +260,7 @@ class ChangeContactEntityForm(forms.Form):
             if entitie_custom_field.name in contact_custom_field_names:
                 self.contact.set_custom_field(
                     entitie_custom_field.name,
-                    old_entity.get_custom_field(entitie_custom_field.name)
+                    old_entity.get_custom_field_value(entitie_custom_field.name)
                 )
 
         # Delete the old entity
