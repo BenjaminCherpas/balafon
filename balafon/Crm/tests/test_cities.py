@@ -71,7 +71,9 @@ class CitiesSuggestListTestCase(BaseTestCase):
         city = mommy.make(models.City, name="abcd", parent=self.parent)
         city2 = mommy.make(models.City, name="abce", parent=self.parent)
         city_in_other_country = mommy.make(models.City, name="abcd", parent=self.foreign_country)
-        response = self.client.get(reverse('crm_get_city_id')+"?name="+city.name+"&country="+str(self.foreign_country.id))
+        response = self.client.get(
+            reverse('crm_get_city_id')+"?name="+city.name+"&country="+str(self.foreign_country.id)
+        )
         self.assertEqual(200, response.status_code)
         self.assertContains(response, city_in_other_country.id)
         self.assertNotContains(response, city.id)
@@ -87,7 +89,9 @@ class CitiesSuggestListTestCase(BaseTestCase):
         c1 = mommy.make(models.City, name="ABC", parent=self.parent, geonames_valid=True, country=self.parent.name)
         c2 = mommy.make(models.City, name="ABD", parent=self.parent, geonames_valid=True, country=self.parent.name)
         c3 = mommy.make(models.City, name="XYZ", parent=self.parent, geonames_valid=True, country=self.parent.name)
-        c4 = mommy.make(models.City, name="ABE", parent=self.foreign_country, geonames_valid=True, country=self.foreign_country.name)
+        c4 = mommy.make(
+            models.City, name="ABE", parent=self.foreign_country, geonames_valid=True, country=self.foreign_country.name
+        )
 
         response = self.client.get(reverse('crm_get_cities')+'?term=a&country=0')
         self.assertEqual(200, response.status_code)
@@ -100,10 +104,15 @@ class CitiesSuggestListTestCase(BaseTestCase):
         c1 = mommy.make(models.City, name="ABC", parent=self.parent, geonames_valid=True, country=self.parent.name)
         c2 = mommy.make(models.City, name="ABD", parent=self.parent, geonames_valid=True, country=self.parent.name)
         c3 = mommy.make(models.City, name="XYZ", parent=self.parent, geonames_valid=True, country=self.parent.name)
-        c4 = mommy.make(models.City, name="ABE", parent=self.foreign_country, geonames_valid=True, country=self.foreign_country.name)
+        c4 = mommy.make(
+            models.City, name="ABE", parent=self.foreign_country, geonames_valid=True, country=self.foreign_country.name
+        )
 
-        response = self.client.get(reverse('crm_get_cities')+'?term=a&country={0}'.format(
-            self.foreign_country.id))
+        response = self.client.get(
+            reverse('crm_get_cities')+'?term=a&country={0}'.format(
+                self.foreign_country.id
+            )
+        )
         self.assertEqual(200, response.status_code)
         self.assertNotContains(response, c1.name)
         self.assertNotContains(response, c2.name)
