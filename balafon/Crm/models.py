@@ -1146,6 +1146,13 @@ class Group(TimeStampedModel):
         blank=True, default='', max_length=7, validators=[validate_rgb], verbose_name=_(u'Background color'),
         help_text=_(u"Background color. Must be a rgb code. For example: #000000")
     )
+    export_to = models.CharField(
+        verbose_name=_(u"Export to"), max_length=50, default=u"", blank=True, db_index=True,
+        help_text=_(
+            u"Name of the column when exporting contact to Excel. If empty, not exported. "
+            u"Two groups can have the same column and will be separated by commas"
+        )
+    )
     
     favorites = GenericRelation(Favorite)
 

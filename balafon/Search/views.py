@@ -393,7 +393,9 @@ def export_contacts_as_excel(request):
                 elif custom_field.model == CustomField.MODEL_ENTITY:
                     fields.append('entity_custom_field_' + custom_field.name)
                     field_dict['entity_custom_field_' + custom_field.name] = custom_field.label
-            
+
+            fields_length = len(fields)
+
             for index, field in enumerate(fields):
                 if field[:4] == 'get_':
                     field = field[4:]
@@ -402,7 +404,11 @@ def export_contacts_as_excel(request):
                 # print the verbose name if exists, the field name if not
                 value = field_dict.get(field, field)
                 worksheet.write(0, index, value, header_style)
-            
+
+            groups_columns = sorted(set([group.export_to for group in Group.objects.exclude(export_to="")]))
+            for index, column_name in enumerate(groups_columns):
+                worksheet.write(0, fields_length + index, column_name, header_style)
+
             style = xlwt.Style.default_style
             for index, contact in enumerate(contacts):
                 for index2, field_name in enumerate(fields):
@@ -416,6 +422,15 @@ def export_contacts_as_excel(request):
 
                     if field:
                         worksheet.write(index + 1, index2, u'{0}'.format(field), style)
+
+                # Export groups data
+                for index3, column_name in enumerate(groups_columns):
+                    member_of_groups = []
+                    for group in Group.objects.filter(export_to=column_name):
+                        if contact.is_in_group(group.name):
+                            member_of_groups.append(group.name)
+                    value = u",".join(sorted(member_of_groups))
+                    worksheet.write(index + 1, fields_length + index3, value, style)
 
             response = HttpResponse(content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename={0}.xls'.format('balafon')
