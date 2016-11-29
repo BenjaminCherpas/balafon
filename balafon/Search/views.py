@@ -415,14 +415,14 @@ def export_contacts_as_excel(request):
                         field = field()
 
                     if field:
-                        worksheet.write(index+1, index2, unicode(field), style)
+                        worksheet.write(index + 1, index2, u'{0}'.format(field), style)
 
             response = HttpResponse(content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename={0}.xls'.format('balafon')
             workbook.save(response)
             return response
         else:
-            logger.error(unicode(search_form.errors))
+            logger.error(u'{0}'.format(search_form.errors))
     raise Http404
 
 

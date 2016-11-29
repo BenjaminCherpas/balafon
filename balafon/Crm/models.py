@@ -989,7 +989,7 @@ class Contact(AddressModel):
         """gender as string for custom templating in newsletter"""
         for gender, name in Contact.GENDER_CHOICE:
             if self.gender == gender:
-                return unicode(name)  # lazy translation must be converted in unicode
+                return u'{0}'.format(name)  # lazy translation must be converted in unicode
         return u''
 
     @property
