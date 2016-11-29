@@ -100,9 +100,9 @@ admin.site.register(models.Contact, ContactAdmin)
 
 class GroupAdmin(admin.ModelAdmin):
     """custom admin view"""
-    list_display = ['name', 'description', 'subscribe_form']
+    list_display = ['name', 'description', 'subscribe_form', "export_to"]
     search_fields = ['name']
-    list_filter = ['subscribe_form']
+    list_filter = ['subscribe_form', "export_to"]
     list_editable = ['subscribe_form']
     filter_horizontal = ['entities', 'contacts']
 

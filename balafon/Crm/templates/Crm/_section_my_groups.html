@@ -7,8 +7,13 @@
   
 {% block section_data %}
   <table class="table table-striped">
-  <tr><th>{% trans "Name" %}</th><th>{% trans "Number of members" %}</th>
-      <th>{% trans "Description" %}</th><th>&nbsp;</th></tr>
+  <tr>
+    <th>{% trans "Name" %}</th>
+    <th>{% trans "Excel column" %}</th>
+    <th>{% trans "Number of members" %}</th>
+    <th>{% trans "Description" %}</th>
+    <th>&nbsp;</th>
+  </tr>
   {% for g in groups %}
     <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
       <td>
@@ -20,8 +25,8 @@
           {{g.name}}
         </span>
       </td>
-      <td>{{g.entities.count}} {% trans "entities" %}
-      - {{g.contacts.count}} {% trans "contacts" %}</td>
+      <td>{{g.export_to}}</td>
+      <td>{{g.entities.count}} {% trans "entities" %} - {{g.contacts.count}} {% trans "contacts" %}</td>
       <td>
         <span class="description contenteditable" contenteditable="true" rel="{% url 'auto_save_data' 'group' 'description' g.id %}">
           {{g.description}}
