@@ -798,6 +798,77 @@ class EditGroupTestCase(BaseTestCase):
         self.assertEqual(list(group.entities.all().order_by('id')), [entity2])
 
 
+class IsInGroupTestCase(BaseTestCase):
+    """test the is_in_group api"""
+
+    def test_is_contact_in_group(self):
+        """it should returns True"""
+        group_name = u"my group"
+        contact = mommy.make(models.Contact)
+        contact.entity.is_single_contact = False
+        contact.entity.save()
+        group = mommy.make(models.Group, name=group_name)
+        group.contacts.add(contact)
+        group.save()
+
+        self.assertTrue(contact.is_in_group(group_name))
+
+    def test_is_single_contact_in_group(self):
+        """it should returns True"""
+        group_name = u"my group"
+        contact = mommy.make(models.Contact)
+        contact.entity.is_single_contact = True
+        contact.entity.save()
+        group = mommy.make(models.Group, name=group_name)
+        group.contacts.add(contact)
+        group.save()
+
+        self.assertTrue(contact.is_in_group(group_name))
+
+    def test_is_entity_in_group(self):
+        """it should returns True"""
+        group_name = u"my group"
+        contact = mommy.make(models.Contact)
+        contact.entity.is_single_contact = False
+        contact.entity.save()
+        group = mommy.make(models.Group, name=group_name)
+        group.entities.add(contact.entity)
+        group.save()
+
+        self.assertTrue(contact.is_in_group(group_name))
+
+    def test_is_single_contact_entity_in_group(self):
+        """it should returns False"""
+        group_name = u"my group"
+        contact = mommy.make(models.Contact)
+        contact.entity.is_single_contact = True
+        contact.entity.save()
+        group = mommy.make(models.Group, name=group_name)
+        group.entities.add(contact.entity)
+        group.save()
+
+        self.assertFalse(contact.is_in_group(group_name))
+
+    def test_not_in_group(self):
+        """it should returns False"""
+        group_name = u"my group"
+        contact = mommy.make(models.Contact)
+        contact.entity.is_single_contact = False
+        contact.entity.save()
+        mommy.make(models.Group, name=group_name)
+
+        self.assertFalse(contact.is_in_group(group_name))
+
+    def test_no_group(self):
+        """it should returns False"""
+        group_name = u"my group"
+        contact = mommy.make(models.Contact)
+        contact.entity.is_single_contact = False
+        contact.entity.save()
+
+        self.assertFalse(contact.is_in_group(group_name))
+
+
 class AddToGroupTest(BaseTestCase):
     """Test the add_group methods"""
 

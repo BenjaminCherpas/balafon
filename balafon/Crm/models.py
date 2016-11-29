@@ -1029,6 +1029,23 @@ class Contact(AddressModel):
         group.save()
         return group, created
 
+    def is_in_group(self, group_name):
+        """returns True if contact is member of the group"""
+        try:
+            group = Group.objects.get(name=group_name)
+
+            if group.contacts.filter(id=self.id).exists():
+                return True
+
+            if not self.entity.is_single_contact:
+                if group.entities.filter(id=self.entity.id).exists():
+                    return True
+
+        except Group.DoesNotExist:
+            pass
+
+        return False
+
     def save(self, *args, **kwargs):
         """save"""
         try:
