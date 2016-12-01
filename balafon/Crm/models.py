@@ -900,11 +900,11 @@ class Contact(AddressModel):
         
     def get_phones(self):
         """list of phones"""
-        return [x for x in (self.phone, self.mobile) if x]
+        return [phone for phone in (self.phone, self.mobile) if phone]
     
     def get_roles(self):
         """list of roles"""
-        return [x.name for x in self.role.all()]
+        return [role.name for role in self.role.all()]
     
     def has_entity(self):
         """is it member of an entity (not a single contact or an individual)"""
