@@ -911,6 +911,7 @@ class Contact(AddressModel):
         if not self.entity.is_single_contact:
             return self.entity.notes
         return u""
+    entity_notes.fget.short_description = _(u'Entity notes')
     
     def has_entity(self):
         """is it member of an entity (not a single contact or an individual)"""

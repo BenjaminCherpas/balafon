@@ -384,6 +384,7 @@ def export_contacts_as_excel(request):
             field_dict = dict([(field.name, _(field.verbose_name).capitalize()) for field in Contact._meta.fields])
             field_dict['foreign_country'] = _(u"Country")
             field_dict['entity_name'] = _(u"Entity")
+            field_dict['entity_notes'] = _(u"Entity notes")
             
             # Add custom fields
             for custom_field in CustomField.objects.filter(export_order__gt=0).order_by('export_order'):
