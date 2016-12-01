@@ -14,6 +14,7 @@ from balafon.Search.tests import BaseTestCase
 
 class ExportContactsToExcelTest(BaseTestCase):
     """Test Export Excel operation from search results"""
+    nb_columns = 21
 
     def _create_contact(self, entity_name="My Corp", **kwargs):
         """create a contact"""
@@ -42,7 +43,7 @@ class ExportContactsToExcelTest(BaseTestCase):
 
         worksheet = workbook.sheet_by_index(0)
         self.assertEqual(worksheet.nrows, 2)
-        self.assertEqual(worksheet.ncols, 19)
+        self.assertEqual(worksheet.ncols, self.nb_columns)
 
         # fields = [
         #     'id', 'get_gender_display', 'lastname', 'firstname', 'title', 'get_entity_name', 'job', 'role',
@@ -76,7 +77,7 @@ class ExportContactsToExcelTest(BaseTestCase):
 
         worksheet = workbook.sheet_by_index(0)
         self.assertEqual(worksheet.nrows, 2)
-        self.assertEqual(worksheet.ncols, 19)
+        self.assertEqual(worksheet.ncols, self.nb_columns)
 
         self.assertEqual(worksheet.cell(1, 0).value, str(contact.id))
         self.assertEqual(worksheet.cell(1, 1).value, "")
@@ -104,7 +105,7 @@ class ExportContactsToExcelTest(BaseTestCase):
 
         worksheet = workbook.sheet_by_index(0)
         self.assertEqual(worksheet.nrows, 2)
-        self.assertEqual(worksheet.ncols, 20)
+        self.assertEqual(worksheet.ncols, self.nb_columns + 1)
 
         self.assertEqual(worksheet.cell(1, 0).value, str(contact.id))
         self.assertEqual(worksheet.cell(1, 1).value, "")
@@ -114,8 +115,9 @@ class ExportContactsToExcelTest(BaseTestCase):
         self.assertEqual(worksheet.cell(1, 5).value, entity.name)
         self.assertEqual(worksheet.cell(1, 17).value, contact.email)
 
-        self.assertEqual(worksheet.cell(0, 19).value, u"Groups")
-        self.assertEqual(worksheet.cell(1, 19).value, group.name)
+        group0_index = self.nb_columns
+        self.assertEqual(worksheet.cell(0, group0_index).value, u"Groups")
+        self.assertEqual(worksheet.cell(1, group0_index).value, group.name)
 
     def test_export_entity_group(self):
         """it should export groups to Excel"""
@@ -135,7 +137,7 @@ class ExportContactsToExcelTest(BaseTestCase):
 
         worksheet = workbook.sheet_by_index(0)
         self.assertEqual(worksheet.nrows, 2)
-        self.assertEqual(worksheet.ncols, 20)
+        self.assertEqual(worksheet.ncols, self.nb_columns + 1)
 
         self.assertEqual(worksheet.cell(1, 0).value, str(contact.id))
         self.assertEqual(worksheet.cell(1, 1).value, "")
@@ -145,8 +147,9 @@ class ExportContactsToExcelTest(BaseTestCase):
         self.assertEqual(worksheet.cell(1, 5).value, entity.name)
         self.assertEqual(worksheet.cell(1, 17).value, contact.email)
 
-        self.assertEqual(worksheet.cell(0, 19).value, u"Groups")
-        self.assertEqual(worksheet.cell(1, 19).value, group.name)
+        group0_index = self.nb_columns
+        self.assertEqual(worksheet.cell(0, group0_index).value, u"Groups")
+        self.assertEqual(worksheet.cell(1, group0_index).value, group.name)
 
     def test_export_contact_not_in_group(self):
         """it should export groups to Excel"""
@@ -164,7 +167,7 @@ class ExportContactsToExcelTest(BaseTestCase):
 
         worksheet = workbook.sheet_by_index(0)
         self.assertEqual(worksheet.nrows, 2)
-        self.assertEqual(worksheet.ncols, 20)
+        self.assertEqual(worksheet.ncols, self.nb_columns + 1)
 
         self.assertEqual(worksheet.cell(1, 0).value, str(contact.id))
         self.assertEqual(worksheet.cell(1, 1).value, "")
@@ -174,8 +177,9 @@ class ExportContactsToExcelTest(BaseTestCase):
         self.assertEqual(worksheet.cell(1, 5).value, entity.name)
         self.assertEqual(worksheet.cell(1, 17).value, contact.email)
 
-        self.assertEqual(worksheet.cell(0, 19).value, u"Groups")
-        self.assertEqual(worksheet.cell(1, 19).value, u"")
+        group0_index = self.nb_columns
+        self.assertEqual(worksheet.cell(0, group0_index).value, u"Groups")
+        self.assertEqual(worksheet.cell(1, group0_index).value, u"")
 
     def test_export_contact_several_groups_same_column(self):
         """it should export groups to Excel"""
@@ -199,7 +203,7 @@ class ExportContactsToExcelTest(BaseTestCase):
 
         worksheet = workbook.sheet_by_index(0)
         self.assertEqual(worksheet.nrows, 2)
-        self.assertEqual(worksheet.ncols, 20)
+        self.assertEqual(worksheet.ncols, self.nb_columns + 1)
 
         self.assertEqual(worksheet.cell(1, 0).value, str(contact.id))
         self.assertEqual(worksheet.cell(1, 1).value, "")
@@ -209,8 +213,9 @@ class ExportContactsToExcelTest(BaseTestCase):
         self.assertEqual(worksheet.cell(1, 5).value, entity.name)
         self.assertEqual(worksheet.cell(1, 17).value, contact.email)
 
-        self.assertEqual(worksheet.cell(0, 19).value, u"Groups")
-        self.assertEqual(worksheet.cell(1, 19).value, u','.join([group1.name, group2.name]))
+        group0_index = self.nb_columns
+        self.assertEqual(worksheet.cell(0, group0_index).value, u"Groups")
+        self.assertEqual(worksheet.cell(1, group0_index).value, u','.join([group1.name, group2.name]))
 
     def test_export_contact_several_groups_different_columns(self):
         """it should export groups to Excel"""
@@ -238,7 +243,7 @@ class ExportContactsToExcelTest(BaseTestCase):
 
         worksheet = workbook.sheet_by_index(0)
         self.assertEqual(worksheet.nrows, 2)
-        self.assertEqual(worksheet.ncols, 21)
+        self.assertEqual(worksheet.ncols, self.nb_columns + 2)
 
         self.assertEqual(worksheet.cell(1, 0).value, str(contact.id))
         self.assertEqual(worksheet.cell(1, 1).value, "")
@@ -248,9 +253,10 @@ class ExportContactsToExcelTest(BaseTestCase):
         self.assertEqual(worksheet.cell(1, 5).value, entity.name)
         self.assertEqual(worksheet.cell(1, 17).value, contact.email)
 
-        self.assertEqual(worksheet.cell(0, 19).value, u"Categories")
-        self.assertEqual(worksheet.cell(1, 19).value, group2.name)
-
-        self.assertEqual(worksheet.cell(0, 20).value, u"Groups")
-        self.assertEqual(worksheet.cell(1, 20).value, group1.name)
+        group0_index = self.nb_columns
+        group1_index = group0_index + 1
+        self.assertEqual(worksheet.cell(0, group0_index).value, u"Categories")
+        self.assertEqual(worksheet.cell(1, group0_index).value, group2.name)
+        self.assertEqual(worksheet.cell(0, group1_index).value, u"Groups")
+        self.assertEqual(worksheet.cell(1, group1_index).value, group1.name)
 

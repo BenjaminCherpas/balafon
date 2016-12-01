@@ -905,6 +905,12 @@ class Contact(AddressModel):
     def get_roles(self):
         """list of roles"""
         return [role.name for role in self.role.all()]
+
+    @property
+    def entity_notes(self):
+        if not self.entity.is_single_contact:
+            return self.entity.notes
+        return u""
     
     def has_entity(self):
         """is it member of an entity (not a single contact or an individual)"""
